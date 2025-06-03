@@ -59,14 +59,20 @@ Refer to the `MakieTutorial.ipynb` I made for some Julia and Makie basics.
   Your browser does not support the video tag.
 </video>
 
+[SLERP Demo]("./slerp_with_state_high_quality.mp4")
+
 <video controls width="640">
   <source src="./EulerAngles.mp4" type="video/mp4">
   Your browser does not support the video tag.
 </video>
 
+[Euler Angle Demo]("./EulerAngles.mp4")
+
 <video controls width="640">
   <source src="./EulerAnglesWithWing.mp4" type="video/mp4">
   Your browser does not support the video tag.
 </video>
+
+[Euler Angle Demo With Wing Model]("./EulerAnglesWithWing.mp4")
 
 ---
