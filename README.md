@@ -48,3 +48,25 @@ I personally don't use it but several people online use this for Julia Notebooks
 ---
 
 Refer to the `MakieTutorial.ipynb` I made for some Julia and Makie basics.
+
+
+---
+
+## Demo Videos
+
+<video controls width="640">
+  <source src="./slerp_with_state_high_quality.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
+
+<video controls width="640">
+  <source src="./EulerAngles.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
+
+<video controls width="640">
+  <source src="./EulerAnglesWithWing.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
+
+---
