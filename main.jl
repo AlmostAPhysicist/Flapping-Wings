@@ -234,6 +234,11 @@ begin
     gamma = rand() * 2 * pi
     islocal = Bool(rand() > 0.5) # Randomly choose between local and standard basis rotations
     # Set to true for local rotations, false for standard basis rotations
+
+    alpha = π / 3 # 60 degrees around x-axis
+    beta = -π / 3 # -60 degrees around y-axis
+    gamma = π / 4 # 45 degrees around z-axis
+    islocal = true # Use local rotations for wingstate_1
     
     @async simulate_euler_angles(wingstate_1, alpha, beta, gamma; n=100, time=1.0, rate_function=t -> sin(t * pi / 2), islocal=islocal)
     @async transformations.interpolate_states(wingstate_2, transformations.combined_rotation(wingstate_2[], 
@@ -409,7 +414,7 @@ using FileIO
 using LinearAlgebra
 
 wing = load(assetpath("D:/Programming/Flapping Wing Flying Research/Models/edited_wing.STL"))
-s = Scene(camera=cam3d!, size=(1920, 1080))
+s = Scene(camera=cam3d!)
 windowmanager.closeall() # Close all windows before displaying new ones
 windowmanager.display(s; names=["Wing Mesh"])
 drawState!(s; alpha=0.5)
@@ -426,7 +431,8 @@ obswingmesh = lift(wingstate) do st
     GeometryBasics.mesh(rotated_positions, faces)
 end
 
-wing_mesh_scatter = meshscatter!(s, (0,0,0), marker=obswingmesh, markersize=0.0075, color=:gold, transparency=true, alpha=0.5)
+drawState!(s, State(); location=Point3(1.0,1.0,1.0), alpha=0.5, scale=0.5) # Draw the state coordinate arrows in the scene
+wing_mesh_scatter = meshscatter!(s, (1,1,1), marker=obswingmesh, markersize=0.0075, color=:gold, transparency=true, alpha=0.5)
 
 # Create a render custom vectors attached to the observable state
 custom_vectors_to_show = [Point3(1.0, 0.0, 0.0), Point3(0.0, 1.0, 0.0), Point3(0.0, 0.0, 1.0)]
@@ -446,25 +452,102 @@ s1 = State(conversions.axisangle2quat([1, 0, 0], π / 3) * s1.q) # Rotate around
 
 s2 = State()
 s2 = State(conversions.axisangle2quat([1, 0, 0], -π / 3) * s2.q) # Rotate around x-axis by -60 degrees
-s2 = State(conversions.axisangle2quat([0, 1, 0], π / 6) * s2.q) # Rotate around y-axis by 30 degrees
+s2 = State(conversions.coordinate_transform(conversions.axisangle2quat([0, 1, 0], π / 6), s2.q) * s2.q) # Rotate around y-axis by 30 degrees
 
 wingstate[] = s1 # Set the initial state of the wing mesh
 
 
 iterations = 10
 n_per_iteration = 50 # Number of frames per iteration
-time_per_iteration = 0.01 # Time for each iteration in seconds
+time_per_iteration = 1 # Time for each iteration in seconds
 for t in 1:iterations
     # Interpolate the wing mesh state between s1 and s2
     toState = iseven(t) ? s1 : s2 # Alternate between s1 and s2
-    transformations.interpolate_states(wingstate, toState; n=n_per_iteration, time=time_per_iteration, rate_function=t -> sin(t * pi / 2))
+    transformations.interpolate_states(wingstate, toState; n=n_per_iteration, time=time_per_iteration, rate_function=t -> (1 - cos(t * π)) / 2) # Smooth interpolation using a cosine function
     notify(wingstate) # Notify the observable to update the plot
 end
 
 
 
 
+# DragonFly Mesh 
 
+using GLMakie, GeometryBasics, FileIO
+using LinearAlgebra, Quaternions
+using Quaternions: Quaternion as Quaternion
+
+# Import 3D models of the DragonFly
+body_model = load("Models/DragonFly/Body.stl")
+front_left_wing_model = load("Models/DragonFly/FrontLeft.stl")
+front_right_wing_model = load("Models/DragonFly/FrontRight.stl")
+hind_left_wing_model = load("Models/DragonFly/HindLeft.stl")
+hind_right_wing_model = load("Models/DragonFly/HindRight.stl")
+
+body = Observable(State()) # Create an observable state for the body
+front_left_wing = Observable(State()) # Create an observable state for the front left wing
+front_right_wing = Observable(State()) # Create an observable state for the front right wing
+hind_left_wing = Observable(State()) # Create an observable state for the hind left wing
+hind_right_wing = Observable(State()) # Create an observable state for the hind right wing
+
+body_mesh = lift(body) do st
+    R = quat2rotmatrix(st.q)
+    positions = body_model.vertex_attributes[1]
+    rotated_positions = [Point3f(R * Vec3f(p)) for p in positions]
+    faces = body_model.faces
+    GeometryBasics.mesh(rotated_positions, faces)
+end
+
+front_left_wing_mesh = lift(front_left_wing) do st
+    R = quat2rotmatrix(st.q)
+    positions = front_left_wing_model.vertex_attributes[1]
+    rotated_positions = [Point3f(R * Vec3f(p)) for p in positions]
+    faces = front_left_wing_model.faces
+    GeometryBasics.mesh(rotated_positions, faces)
+end
+
+front_right_wing_mesh = lift(front_right_wing) do st
+    R = quat2rotmatrix(st.q)
+    positions = front_right_wing_model.vertex_attributes[1]
+    rotated_positions = [Point3f(R * Vec3f(p)) for p in positions]
+    faces = front_right_wing_model.faces
+    GeometryBasics.mesh(rotated_positions, faces)
+end
+
+hind_left_wing_mesh = lift(hind_left_wing) do st
+    R = quat2rotmatrix(st.q)
+    positions = hind_left_wing_model.vertex_attributes[1]
+    rotated_positions = [Point3f(R * Vec3f(p)) for p in positions]
+    faces = hind_left_wing_model.faces
+    GeometryBasics.mesh(rotated_positions, faces)
+end
+
+hind_right_wing_mesh = lift(hind_right_wing) do st
+    R = quat2rotmatrix(st.q)
+    positions = hind_right_wing_model.vertex_attributes[1]
+    rotated_positions = [Point3f(R * Vec3f(p)) for p in positions]
+    faces = hind_right_wing_model.faces
+    GeometryBasics.mesh(rotated_positions, faces)
+end
+
+# Create a scene for the DragonFly
+s_dragonfly = Scene(camera=cam3d!)
+windowmanager.closeall() # Close all windows before displaying new ones
+windowmanager.display(s_dragonfly; names=["DragonFly Mesh"])
+
+# Draw the DragonFly body and wings
+meshscatter!(s_dragonfly, (0, 0, 0), marker=body_mesh, markersize=1)
+meshscatter!(s_dragonfly, (0, 0, 0), marker=front_left_wing_mesh, markersize=1)
+meshscatter!(s_dragonfly, (0, 0, 0), marker=front_right_wing_mesh, markersize=1)
+meshscatter!(s_dragonfly, (0, 0, 0), marker=hind_left_wing_mesh, markersize=1)
+meshscatter!(s_dragonfly, (0, 0, 0), marker=hind_right_wing_mesh, markersize=1)
+
+# Set the initial state of the DragonFly
+
+s1 = State()
+s1 = State(conversions.axisangle2quat([1, 0, 0], π / 3) * s1.q) # Rotate around x-axis by 60 degrees
+
+front_left_wing[] = s1 # Set the initial state of the front left wing
+front_right_wing[] = s1 # Set the initial state of the front right wing
 #----------------------------------------------------------------------------
 recording = Observable(true)
 global io_ref = Ref{Any}(nothing)  # To store the io handle globally

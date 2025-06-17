@@ -27,8 +27,8 @@ windowmanager.display(scene1, scene2; names=["Scene1", "Scene2"])
 v = [0.0, 0.0, 1.0]
 meshscatter!(scene1, (0,0,0), marker=Arrow(Point{3, Float64}(v)).mesh, markersize=1, color=:black, label="v")
 
-axis= [1.0, 0.0, 0.0] # Rotate around y-axis
-angle = π / 2 # 45 degrees
+axis= [1.0, 1.0, 0.0] # Rotate around y-axis
+angle = π / 3 # 90 degrees
 rotation_quaternion = axisangle2quat(axis, angle)
 
 v_rotated = imag_part(rotation_quaternion * Quaternion(0, v...) * inv(rotation_quaternion))
