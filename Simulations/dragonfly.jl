@@ -2,11 +2,15 @@
 using GLMakie, GeometryBasics, LinearAlgebra, Quaternions, FileIO
 import Quaternions: Quaternion as Quaternion
 
+cd(@__DIR__) # Changing the current working directory from project root to the parent directory of this file so that pwd() and @__DIR__ match.
 # Import custom code and utility functions
-include("src/State_and_Conversions.jl")
-include("src/Rendering.jl")
-include("src/Transformations.jl")
-include("src/WindowManager.jl")
+include("../src/State_and_Conversions.jl")
+include("../src/Rendering.jl")
+include("../src/Transformations.jl")
+include("../src/WindowManager.jl")
+include("../src/Recorder.jl")
+
+
 
 # Initialize the custom structs and utilities
 conversions = Conversions()
@@ -63,13 +67,13 @@ end
 
 # Load the shaders and models for the DragonFly
 begin #Load _models
-    shader = load("Models/DragonFly/HighQuality/body.png") # Set to true for using shaders, false for using the default renderer
+    shader = load("../Models/DragonFly/HighQuality/body.png") # Set to true for using shaders, false for using the default renderer
 
-    _body_model = GeometryBasics.expand_faceviews(load("Models/DragonFly/HighQuality/body.obj").mesh)
-    _frontleftwing_model = GeometryBasics.expand_faceviews(load("Models/DragonFly/HighQuality/frontleftwing.obj").mesh)
-    _frontrightwing_model = GeometryBasics.expand_faceviews(load("Models/DragonFly/HighQuality/frontrightwing.obj").mesh)
-    _hindleftwing_model = GeometryBasics.expand_faceviews(load("Models/DragonFly/HighQuality/hindleftwing.obj").mesh)
-    _hindrightwing_model = GeometryBasics.expand_faceviews(load("Models/DragonFly/HighQuality/hindrightwing.obj").mesh)
+    _body_model = GeometryBasics.expand_faceviews(load("../Models/DragonFly/HighQuality/body.obj").mesh)
+    _frontleftwing_model = GeometryBasics.expand_faceviews(load("../Models/DragonFly/HighQuality/frontleftwing.obj").mesh)
+    _frontrightwing_model = GeometryBasics.expand_faceviews(load("../Models/DragonFly/HighQuality/frontrightwing.obj").mesh)
+    _hindleftwing_model = GeometryBasics.expand_faceviews(load("../Models/DragonFly/HighQuality/hindleftwing.obj").mesh)
+    _hindrightwing_model = GeometryBasics.expand_faceviews(load("../Models/DragonFly/HighQuality/hindrightwing.obj").mesh)
 end
 
 # Define the wing positions relative to the body position (manually determined in BLENDER)
@@ -121,279 +125,6 @@ begin # Attach the models to the state observables with fixed _models
 end
 
 
-# Create a scene for the DragonFly
-set_theme!(theme_dark()) # Set the theme for the scene
-s_dragonfly = Scene(camera=cam3d!, size=(1920, 1080))
-# drawState!(s_dragonfly)
-body_mesh = meshscatter!(s_dragonfly, body_pos, marker=body_model, markersize=1, color=shader) # Add the body position to the scene
-frontleftwing_mesh = meshscatter!(s_dragonfly, frontleftwing_pos, marker=frontleftwing_model, markersize=1, color=shader)
-frontrightwing_mesh = meshscatter!(s_dragonfly, frontrightwing_pos, marker=frontrightwing_model, markersize=1, color=shader)
-hindleftwing_mesh = meshscatter!(s_dragonfly, hindleftwing_pos, marker=hindleftwing_model, markersize=1, color=shader)
-hindrightwing_mesh = meshscatter!(s_dragonfly, hindrightwing_pos, marker=hindrightwing_model, markersize=1, color=shader)
-
-# Optional Repositioning of the DragonFly
-body_pos[] = Point3(0.25, 0.0, -1.0)
-
-
-# --------------------------------------------------------------------
-
-
-# Simulate Flapping Wings
-
-
-# --------------------------------------------------------------------
-# 1. Interpolate between two states 
-#------------------------------------
-# Animate the wing mesh by rotating it around the ±60 degrees around the global x-axis as well as 0-30 degreesglobal y-axis
-
-# It turns out that the sandwich between q and inv(q) rotates quaternions.
-# Similarly, the sandwich between q and q reflects quaternions.
-#https://www.euclideanspace.com/maths/geometry/affine/reflection/quaternion/index.htm#:~:text=We%20can%20represent%20reflection%20using,which%20pass%20through%20the%20origin.
-
-plane_normal = normalize([2,3,4]) # Normal vector of the plane for reflection
-reflection_quaternion = Quaternion(0, plane_normal...) # Quaternion representing the reflection across the plane
-
-pt = Point3(1.0, 2.0, 3.0) # Point through which the reflection is performed
-reflected_pt = imag_part(reflection_quaternion * Quaternion(0, pt...) * reflection_quaternion) # Reflect the point across the plane
-
-reflect(q::Quaternion, normal::AbstractVector) = Quaternion(0, normal...) * q * Quaternion(0, normal...)
-
-sfrontright1 = State()
-sfrontright1 = State(conversions.axisangle2quat([1, 0, 0], π / 10) * sfrontright1.q) # Rotate around x-axis by 60 degrees
-sfrontleft1 = State(reflect(sfrontright1.q, [0, 1, 0])) # Reflect the quaternion across the XZ plane (i.e. the normal vector is [0, 1, 0])
-
-sfrontright2 = State()
-sfrontright2 = State(conversions.axisangle2quat([1, 0, 0], -π / 6) * sfrontright2.q) # Rotate around x-axis by -60 degrees
-sfrontright2 = State(conversions.coordinate_transform(conversions.axisangle2quat([0, 1, 0], π / 6), sfrontright2.q) * sfrontright2.q) # Rotate around y-axis by 30 degrees
-sfrontleft2 = State(reflect(sfrontright2.q, [0, 1, 0])) # Reflect the quaternion across the XZ plane (i.e. the normal vector is [0, 1, 0])
-
-frontleftwing[] = State(sfrontleft1.q)
-frontrightwing[] = State(sfrontright1.q)
-
-shindright1 = State()
-shindright1 = State(conversions.axisangle2quat([1, 0, 0], -π / 6) * shindright1.q) # Rotate around x-axis by 60 degrees
-shindright1 = State(conversions.coordinate_transform(conversions.axisangle2quat([0, 1, 0], π / 6), shindright1.q) * shindright1.q) # Rotate around y-axis by -30 degrees
-shindleft1 = State(reflect(shindright1.q, [0, 1, 0])) # Reflect the quaternion across the XZ plane (i.e. the normal vector is [0, 1, 0])
-
-shindright2 = State()
-shindright2 = State(conversions.axisangle2quat([1, 0, 0], π / 10) * shindright2.q) # Rotate around x-axis by -60 degrees
-shindleft2 = State(reflect(shindright2.q, [0, 1, 0])) # Reflect the quaternion across the XZ plane (i.e. the normal vector is [0, 1, 0])
-
-hindleftwing[] = State(shindleft1.q)
-hindrightwing[] = State(shindright1.q)
-
-# Make sure the ordering of states is consistent with the wing observables:
-#
-# wingstates order: [frontleftwing, frontrightwing, hindleftwing, hindrightwing]
-# states order: [(sfrontleft1, sfrontleft2), (sfrontright1, sfrontright2),
-#                (shindleft1, shindleft2), (shindright1, shindright2)]
-# current_states in the same order:
-current_states = [sfrontleft1, sfrontright1, shindleft1, shindright1]
-wingstates = [frontleftwing, frontrightwing, hindleftwing, hindrightwing]
-states = [(sfrontleft1, sfrontleft2), (sfrontright1, sfrontright2),
-          (shindleft1, shindleft2), (shindright1, shindright2)]
-
-iterations = 10
-n_per_iteration = 50           # Number of frames per iteration
-time_per_iteration = 0.1         # Time for each iteration in seconds
-
-for flap in 1:iterations
-    # Alternate between state1 and state2 for each wing.
-    # Use state1 on odd flaps and state2 on even flaps.
-    toState = iseven(flap) ? 2 : 1
-    next_states = [s[toState] for s in states]
-
-    # Store the starting states for this flap
-    start_states = deepcopy(current_states)
-
-    rate_function = t -> (1 - cos(t * π)) / 2  # Smooth interpolation using a cosine function
-
-    for i in 1:n_per_iteration
-        t_normalized = rate_function(i / n_per_iteration)  # Normalize t to [0, 1]
-        for j in 1:length(current_states)
-            # Interpolate between the start and target state for this wing
-            wingstates[j][] = State(slerp(start_states[j].q, next_states[j].q, t_normalized))
-        end
-        yield()  # Yield to allow the GUI to update
-        sleep(time_per_iteration / n_per_iteration)  # Control the speed of the animation
-    end
-
-    # Update current_states to the new states after this flap
-    current_states = deepcopy(next_states)
-end
-
-
-recording = Observable(true)
-global io_ref = Ref{Any}(nothing)  # To store the io handle globally
-
-on(events(s_dragonfly).keyboardbutton) do event
-    if event.action == Keyboard.press && event.key == Keyboard.q
-        recording[] = false
-    end
-end
-
-@async begin
-    sleep(1)  # Wait for the scene to be fully rendered before starting the recording
-    record(s_dragonfly, "DragonFly.mp4"; framerate=n_per_iteration/time_per_iteration) do io
-        io_ref[] = io  # Store the io handle for use in the listener
-
-        # Listener: record a frame only when wingstate changes and recording is on
-        wingstate_listener = on(hindrightwing) do new_state
-            if recording[] && io_ref[] !== nothing
-                recordframe!(io_ref[])
-            end
-        end
-
-        # Wait until recording is stopped or window is closed
-        while isopen(s) && recording[]
-            yield()  # Yield to event loop, no need to sleep
-        end
-
-        # Clean up
-        off(wingstate_listener)
-        io_ref[] = nothing
-    end
-end
-
-n_per_iteration/time_per_iteration
-
-# --------------------------------------------------------------------
-
-
-
-# 2. Rotation velocity
-#-----------------------
-wingstates = [frontleftwing, frontrightwing, hindleftwing, hindrightwing]
-for i in wingstates
-    i[] = State()  # Reset the wing states to the initial state
-end
-
-reflect(q::Quaternion, normal::AbstractVector) = Quaternion(0, normal...) * q * Quaternion(0, normal...)
-
-
-# Parameters for global rotation around the x-axis
-phi_x_global = deg2rad(0)
-omega_x_global = 20
-theta_min = deg2rad(0)  # Minimum angle for the global x-axis rotation
-theta_max = deg2rad(45)  # Maximum angle for the global x-axis rotation
-# Map -1,1 to theta_min, theta_max
-squeeze(f, x) = f[1] + (f[2] - f[1]) * (x + 1) / 2
-theta_x_global(t) = squeeze((theta_min, theta_max), cos(omega_x_global * t + phi_x_global))
-# Plot the global rotation around the x-axis
-plot(0:0.1:5, theta_x_global.(0:0.1:5))
-
-
-# Parameters for local rotation around the y-axis
-phi_y_local = deg2rad(10)
-omega_y_local = 20
-theta_min_y = deg2rad(-40)  # Minimum angle for the local y-axis rotation
-theta_max_y = deg2rad(40)  # Maximum angle for the local y-axis rotation
-# Map -1,1 to theta_min_y, theta_max_y
-squeeze_y(f, x) = f[1] + (f[2] - f[1]) * (x + 1) / 2
-theta_y_local(t) = squeeze_y((theta_min_y, theta_max_y), sin(omega_y_local * t + phi_y_local))
-# Plot the local rotation around the y-axis
-plot(0:0.1:5, theta_y_local.(0:0.1:5))
-
-t = Observable(0.0)
-max_time = 1.0
-dt = 0.1/omega_x_global  # Time step for the simulation
-max_iterations = Int(max_time/dt)
-
-
-
-
-function update_wings(t)
-    frontrightwing[] = State(conversions.axisangle2quat([1, 0, 0], -theta_x_global(t[])))
-    hindrightwing[] = State(conversions.axisangle2quat([1, 0, 0], -theta_x_global(t[]+pi/omega_x_global)))
-    
-    # Apply local rotation around y-axis
-    frontrightwing[] = State(conversions.coordinate_transform(conversions.axisangle2quat([0, 1, 0], theta_y_local(t[])), frontrightwing[].q)*frontrightwing[].q)
-    hindrightwing[] = State(conversions.coordinate_transform(conversions.axisangle2quat([0, 1, 0], theta_y_local(t[]+pi/omega_y_local)), hindrightwing[].q)*hindrightwing[].q)
-
-    # Reflect the left wings across the XZ plane
-    frontleftwing[] = State(reflect(frontrightwing[].q, [0, 1, 0]))  # Reflect the quaternion across the XZ plane
-    hindleftwing[] = State(reflect(hindrightwing[].q, [0, 1, 0]))  # Reflect the quaternion across the XZ plane
-end
-
-update_wings(t)  # Initial update to set the initial state of the wings
-display(s_dragonfly)  # Display the scene
-
-
-for i in 1:max_iterations
-    t[] = t[] + dt  # Update time observable
-
-    # Update the states based on the angular velocities
-    # frontrightwing[] = State()
-    # hindrightwing[] = State()
-    update_wings(t)
-    sleep(dt)  # Yield to allow the GUI to update
-end
-
-
-recording = Observable(true)
-global io_ref = Ref{Any}(nothing)  # To store the io handle globally
-
-on(events(s_dragonfly).keyboardbutton) do event
-    if event.action == Keyboard.press && event.key == Keyboard.p
-        recording[] = false
-    end
-end
-
-@async begin
-    sleep(1)  # Wait for the scene to be fully rendered before starting the recording
-    record(s_dragonfly, "DragonFly40HzFlapping.mp4"; framerate=Int(1/dt)) do io
-        io_ref[] = io  # Store the io handle for use in the listener
-
-        # Listener: record a frame only when wingstate changes and recording is on
-        wingstate_listener = on(t) do new_frame
-            if recording[] && io_ref[] !== nothing
-                recordframe!(io_ref[])
-            end
-        end
-
-        # Wait until recording is stopped or window is closed
-        while isopen(s_dragonfly) && recording[]
-            yield()  # Yield to event loop, no need to sleep
-        end
-
-        # Clean up
-        off(wingstate_listener)
-        io_ref[] = nothing
-    end
-end
-
-
-# --------------------------------------------------------------------
-
-# 3. Rotational velocity with sliders
-#-------------------------------------
-
-# Create a scene for the DragonFly
-set_theme!(theme_dark()) # Set the theme for the scene
-s_dragonfly = Scene(camera=cam3d!, size=(500, 500))
-# drawState!(s_dragonfly)
-body_mesh = meshscatter!(s_dragonfly, body_pos, marker=body_model, markersize=1, color=shader) # Add the body position to the scene
-frontleftwing_mesh = meshscatter!(s_dragonfly, frontleftwing_pos, marker=frontleftwing_model, markersize=1, color=shader)
-frontrightwing_mesh = meshscatter!(s_dragonfly, frontrightwing_pos, marker=frontrightwing_model, markersize=1, color=shader)
-hindleftwing_mesh = meshscatter!(s_dragonfly, hindleftwing_pos, marker=hindleftwing_model, markersize=1, color=shader)
-hindrightwing_mesh = meshscatter!(s_dragonfly, hindrightwing_pos, marker=hindrightwing_model, markersize=1, color=shader)
-
-# Optional Repositioning of the DragonFly
-body_pos[] = Point3(0.25, 0.0, -1.0)
-
-
-wingstates = [frontleftwing, frontrightwing, hindleftwing, hindrightwing]
-for i in wingstates
-    i[] = State()  # Reset the wing states to the initial state
-end
-reflect(q::Quaternion, normal::AbstractVector) = Quaternion(0, normal...) * q * Quaternion(0, normal...)
-
-
-
-
-
-
-
 # --- The Controls and Data Plots ---
 #------------------------------------
 function map_range(val, from, to)
@@ -406,180 +137,7 @@ end
 # ---------------
 
 # Define observables
-dt = Observable(0.001)
-
-# Global rotation around the x-axis
-phi_x_global     = Observable(deg2rad(0))
-omega_x_global   = Observable(12)
-theta_min_global = Observable(deg2rad(0))
-theta_max_global = Observable(deg2rad(45))
-
-# Local rotation around the y-axis
-phi_y_local      = Observable(deg2rad(10))
-omega_y_local    = Observable(12)
-theta_min_y_local = Observable(deg2rad(-40))
-theta_max_y_local = Observable(deg2rad(40))
-
-# Environment variables
-phase_between_front_and_hind = π / 2           # Phase difference (constant for now)
-sync_omegas = Observable(true)                   # Toggle for synchronization
-pause     = Observable(false)                    # New toggle for pause
-
-
-# Map -1,1 to theta_min, theta_max
-theta_x_global(t) = map_range(cos(omega_x_global[] * t + phi_x_global[]), (-1, 1), (theta_min_global[], theta_max_global[]))
-angular_velocity_x_global(t) = -omega_x_global[] * (theta_max_global[] - theta_min_global[]) / 2 * sin(omega_x_global[] * t + phi_x_global[]) # Analytical derivative of theta_x_global
-
-theta_y_local(t) = map_range(sin(omega_y_local[] * t + phi_y_local[]), (-1, 1), (theta_min_y_local[], theta_max_y_local[]))
-angular_velocity_y_local(t) = omega_y_local[] * (theta_max_y_local[] - theta_min_y_local[]) / 2 * cos(omega_y_local[] * t + phi_y_local[]) # Analytical derivative of theta_y_local
-
-
-initial_values = [
-    omega_x_global[], phi_x_global[], theta_min_global[], theta_max_global[],
-    omega_y_local[], phi_y_local[], theta_min_y_local[], theta_max_y_local[],
-    dt[], phase_between_front_and_hind, sync_omegas[], pause[]
-]
-
-
-# Create a main figure for the controls
-Makie.set_theme!(theme_ggplot2())
-controls = Figure(size = (500, 500))
-ax = Axis(controls[1, 1], title="Global X-axis Rotation", xlabel="Time (s)", ylabel="Angle (rad)", tellwidth=false)
-
-# 1. SliderGrid for Global X-axis rotation parameters
-sg_global = SliderGrid(
-    controls[2, 1],
-    (label = "Omega X Global", range = 0:1:100,        format = "{:.0f}", startvalue = omega_x_global[]),
-    (label = "Phi X Global",   range = -π:0.1:π,         format = "{:.2f}", startvalue = phi_x_global[]),
-    (label = "Theta Min Global", range = -π:0.1:π,       format = "{:.2f}", startvalue = theta_min_global[]),
-    (label = "Theta Max Global", range = -π:0.1:π,       format = "{:.2f}", startvalue = theta_max_global[])
-)
-
-# 2. SliderGrid for Local Y-axis rotation parameters
-sg_local = SliderGrid(
-    controls[3, 1],
-    (label = "Omega Y Local", range = 0:1:100,         format = "{:.0f}", startvalue = omega_y_local[]),
-    (label = "Phi Y Local",   range = -π:0.1:π,          format = "{:.2f}", startvalue = phi_y_local[]),
-    (label = "Theta Min Y Local", range = -π:0.1:π,      format = "{:.2f}", startvalue = theta_min_y_local[]),
-    (label = "Theta Max Y Local", range = -π:0.1:π,      format = "{:.2f}", startvalue = theta_max_y_local[])
-)
-
-# 3. SliderGrid for Environment variables (numeric)
-sg_env_num = SliderGrid(
-    controls[4, 1],
-    (label = "dt", range = 0.001:0.001:0.1,       format = "{:.3f}", startvalue = dt[]),
-    (label = "Phase Front-Hind", range = 0:0.01:2π, format = "{:.2f}", startvalue = phase_between_front_and_hind)
-)
-
-# 4. Toggles for Environment variables (boolean)
-sg_env_bool = [
-    Label(controls[5, 1], "Sync Omegas", tellwidth=false),
-    Toggle(controls[5, 2], active = sync_omegas[], tellwidth=false),
-    Label(controls[6, 1], "Pause", tellwidth=false),
-    Toggle(controls[6, 2], active = pause[], tellwidth=false)
-]
-
-ax.finallimits[]
-
-# Collect the slider observables if needed
-sliderobservables = [s.value for s in sg_controls.sliders]
-
-# Update the observables when the sliders change
-omega_x_global_updater = on(sliderobservables[1]) do slider
-    omega_x_global[] = slider
-end
-phi_x_global_updater = on(sliderobservables[2]) do slider
-    phi_x_global[] = slider
-end
-theta_min_global_updater = on(sliderobservables[3]) do slider
-    theta_min_global[] = slider
-end
-theta_max_global_updater = on(sliderobservables[4]) do slider
-    theta_max_global[] = slider
-end
-
-# Plot the global theta and angular velocity on the same plot with lift functions to automatically update the plot
-# times = lift((omega, phi, tmin, tmax) -> 0:0.1/omega:5*2pi/omega, omega_x_global, phi_x_global, theta_min, theta_max)
-times = Observable(0:0.1/omega_x_global[]:5*2π/omega_x_global[])  # Time vector for the simulation
-thetas = lift((t, omega, phi, tmin, tmax) -> theta_x_global.(t), times, omega_x_global, phi_x_global, theta_min_global, theta_max_global)
-angular_velocities = lift((t, omega, phi, tmin, tmax) -> angular_velocity_x_global.(t), times, omega_x_global, phi_x_global, theta_min_global, theta_max_global)
-
-lines!(ax, times, thetas, label="Theta X Global", color=:blue)
-lines!(ax, times, angular_velocities, label="Angular Velocity X Global", color=:red)
-
-# Add a legend to the plot
-axislegend()
-
-# Plot the global theta
-display(controls)
-
-
-
-dt = 0.1/omega_x_global[]  # Time step for the simulation
-function calculate_theta_x_global()
-    calculated_thetas = Float64[]
-    # Initial angle at t=0
-    theta = map_range(cos(phi_x_global[]), (-1, 1), (theta_min_global[], theta_max_global[]))
-    push!(calculated_thetas, theta)
-    for t in times[][2:end]
-        # Integrate using angular_velocity_x_global
-        theta += angular_velocity_x_global(t - dt) * dt
-        # Reverse map to find cos(psi)
-        cos_psi = 2 * (theta - theta_min_global[])/(theta_max_global[] - theta_min_global[]) - 1
-        # Clamp cos_psi to [-1, 1] to avoid numerical errors
-        cos_psi = clamp(cos_psi, -1, 1)
-        # Reapply map_range to ensure theta is in [theta_min, theta_max]
-        theta = map_range(cos_psi, (-1, 1), (theta_min_global[], theta_max_global[]))
-        push!(calculated_thetas, theta)
-    end
-    return calculated_thetas
-end
-
-calculated_thetas = lift((t, omega, phi, tmin, tmax) -> calculate_theta_x_global(), times, omega_x_global, phi_x_global, theta_min_global, theta_max_global)# Update the plot with the calculated theta values
-length(calculated_thetas[])
-lines!(ax, times[], calculated_thetas, label="Calculated Theta X Global", color=:green)
-
-
-
-
-
-pause_state = Observable(false)  # Initial state (not paused)
-
-pause_state_updater = on(events(s_dragonfly).keyboardbutton) do event
-    if event.action == Keyboard.press && event.key == Keyboard.p
-        pause_state[] = !pause_state[]
-        println("Pause state changed to: ", pause_state[])
-    end
-end
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# --- The Controls and Data Plots ---
-#------------------------------------
-function map_range(val, from, to)
-    # Works for any order of from and to ranges (increasing or decreasing)
-    normalized = (val - from[1]) / (from[2] - from[1])
-    return to[1] + normalized * (to[2] - to[1])
-end
-
-# Defining the initial parameters for the rotation
-# ---------------
-
-# Define observables
-dt = Observable(0.001)
+dt = Observable(0.01)
 
 # Global rotation around the x-axis
 phi_x_global     = Observable(deg2rad(0))
@@ -659,41 +217,46 @@ begin # Define Controls figure with plots and controls
     )
 
     # 3. GridLayout for Environment variables
-    sg_env_var = GridLayout(gl_controls[2, 1:2], tellwidth = false, halign = :center)
+    sg_env_var = GridLayout(gl_controls[2, 1:2], tellwidth = false, width = Relative(1))
 
     # 3.1 SliderGrid for Environment variables (numeric)
-    sg_env_num = SliderGrid(
-        sg_env_var[1, 2],
-        (label = "dt", range = 0.001:0.001:0.1, format = "{:.3f} s", startvalue = dt[]),
-        (label = "Phase Front-Hind", range = 0:0.01:2π, format = "{:.2f} rad", startvalue = phase_between_front_and_hind[]),
-        height = Fixed(40),  # Smaller height for 2 sliders
-        tellheight = false,   # Prevent influencing row height
-        # width = Fixed(400),    # Fixed width for the slider grid
-        tellwidth = false      # Prevent influencing column width
-    )
+    # sg_env_num = SliderGrid(
+    #     sg_env_var[1, 2],
+    #     (label = "dt", range = 0.001:0.001:0.1, format = "{:.3f} s", startvalue = dt[]),
+    #     (label = "Phase Front-Hind", range = 0:0.01:2π, format = "{:.2f} rad", startvalue = phase_between_front_and_hind[]),
+    #     height = Fixed(40),  # Smaller height for 2 sliders
+    #     tellheight = false,   # Prevent influencing row height
+    #     # width = Fixed(400),    # Fixed width for the slider grid
+    #     tellwidth = false      # Prevent influencing column width
+    # )
+
+    dt_slider = SliderGrid(sg_env_var[1, 1], (label = "dt", range = 0.001:0.001:0.1, format = "{:.3f} s", startvalue = dt[]), width = Relative(1), tellwidth = false)
+    phase_front_hind_slider = SliderGrid(sg_env_var[1, 2], (label = "Phase Front-Hind", range = 0:0.01:2π, format = "{:.2f} rad", startvalue = phase_between_front_and_hind[]), width = Relative(1), tellwidth = false)
 
     # 3.2 Toggles for Environment variables (boolean) using nested GridLayouts
     # Sync Omegas toggle
-    gl_sync = GridLayout(sg_env_var[2, 2], tellwidth = false)
+    gl_sync = GridLayout(sg_env_var[2, 1], tellwidth = false, width = Relative(2))
     sync_label = Label(gl_sync[1, 1], L"Sync Omegas ($\omega_{x_\text{G}} = \omega_{y_\text{L}}$)")
     sync_toggle = Toggle(gl_sync[1, 2], active = sync_omegas[])
 
     # Pause toggle
-    gl_pause = GridLayout(sg_env_var[3, 2], tellwidth = false)
+    gl_pause = GridLayout(sg_env_var[2, 2], tellwidth = false, width = Relative(2))
     pause_label = Label(gl_pause[1, 1], "Pause")
     pause_toggle = Toggle(gl_pause[1, 2], active = pause[])
 
     # 3.3 Reset button for environment variables as well as the save plots button
-    reset_button = Button(sg_env_var[2, 1], label="Reset Environment Variables")
-    save_plots_button = Button(sg_env_var[2, 3], label="Save Plots")
+    save_plots_button = Button(sg_env_var[3, 1], label="Save Plots", tellwidth = false)
+    record_button = Button(sg_env_var[3, 2], label="Record", tellwidth = false)
+    reset_button = Button(sg_env_var[4, 1:2], label="Reset Environment Variables", tellwidth = false)
 
 
     # Adjust row sizes to prioritize plot height and improve spacing
     rowsize!(gl_main, 1, Relative(0.5))  # Plots take 50% of height
     rowgap!(gl_main, Fixed(10))  # Spacing between plots and controls
     rowgap!(gl_controls, Fixed(1))  # Spacing between control rows
-    rowgap!(sg_env_var, Fixed(1))  # Tight spacing within environment variables
-    colgap!(sg_env_var, Fixed(10))
+    # rowgap!(sg_env_var, 1, Fixed(1))
+    # rowgap!(sg_env_var, Fixed(1))  # Tight spacing within environment variables
+    rowgap!(gl_controls, 1, Fixed(20))
     colgap!(gl_sync, Fixed(5))  # Space between label and toggle
     colgap!(gl_pause, Fixed(5)) # Space between label and toggle
 
@@ -730,10 +293,10 @@ begin # Define Updater Functions
     end
 
     # Update Environment variables
-    dt_updater = on(sg_env_num.sliders[1].value) do slider_val
+    dt_updater = on(dt_slider.sliders[1].value) do slider_val
         dt[] = slider_val
     end
-    phase_front_hind_updater = on(sg_env_num.sliders[2].value) do slider_val
+    phase_front_hind_updater = on(phase_front_hind_slider.sliders[1].value) do slider_val
         phase_between_front_and_hind[] = slider_val
     end
 
@@ -814,7 +377,7 @@ begin # Define Updater Functions
         # Append the current time to the filenames to avoid overwriting
         timestamp = Dates.format(now(), "yyyy-mm-dd_HH-MM-SS")
         # Create directories with Plots_timestamp
-        path = "Plots/plots_$timestamp"
+        path = joinpath(@__DIR__, "..", "Plots/plots_$timestamp")
         mkpath(path)
         # Save the plots in the created directory
         save("$path/rotational_angle_plot.png", colorbuffer(ax_thetas))
@@ -822,8 +385,47 @@ begin # Define Updater Functions
         println("Plots saved in $path/")
         save("$path/controls_figure.png", controls)
     end
-end
 
+    # Record animation button updater
+    # Use the record_on_change_until function within Recorder.jl to record the animation
+
+    # Read the record_button.clicks. Set record_button.label to "Recording ($record_button.clicks[]==1 ? "Off" : "On"$)" to indicate whether recording is active or not.
+    # Whenever the recording has been set active and then back to inactive, reset recording_button.clicks to 0.
+
+    # Initialize the recording label as Off
+    global recording = Observable(false) # Observable to track recording state
+    record_button.label = "Record (Off)"
+    record_button_updater = on(record_button.clicks) do _event
+        # Toggle the recording state
+        if record_button.clicks[]%2 == 1
+            record_button.label = "Record (on)"
+
+            global ioref1 = Ref{Any}(nothing) # Reference to the IO object for recording
+            global ioref2 = Ref{Any}(nothing) # Reference to the IO object for recording
+
+            # Save the recordings under Media/Videos with the current timestamp
+            timestamp = Dates.format(now(), "yyyy-mm-dd_HH-MM-SS")
+            folder = joinpath(@__DIR__, "../Media/Videos", "Dragonfly_$timestamp")
+            mkpath(folder)  # Create the folder if it doesn't exist
+            filename1 = joinpath(folder, "controls.mp4")
+            filename2 = joinpath(folder, "animation.mp4")
+
+            record_on_change_until(controls.scene, t, recording, ioref1, filename1; framerate=1/dt[])
+            record_on_change_until(s_dragonfly, t, recording, ioref2, filename2; framerate=1/dt[])
+            println("Recording started. Press the button again (or press 'r') to stop recording.")
+        elseif record_button.clicks[] != 0
+
+            record_button.label = "Record (Off)"
+            recording[] = false  # Stop the recording
+            # Stop the recording
+            # global ioref1 = nothing  # Stop the recording for the controls figure
+            # global ioref2 = nothing  # Stop the recording for the scene
+            record_button.clicks[] = 0  # Reset the clicks to 0 after stopping the recording
+
+            println("Recording stopped. Videos saved in Media/Videos/...")
+        end
+    end
+end
 
 # Plot the global and local theta and angular velocity on the same plot with lift functions to automatically update the plot
 times = lift(dt->0:dt:5*2π/initial_values[1], dt) # Time vector for the simulation
@@ -908,7 +510,7 @@ end
 update_wings(t)  # Initial update to set the initial state of the wings
 
 
-while running[]
+while isopen(controls.scene) && isopen(s_dragonfly) && running[]  # Main loop to keep the simulation running
 
     if !pause[]  # Check if the simulation is paused
         

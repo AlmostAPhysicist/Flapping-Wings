@@ -3,10 +3,10 @@ using GLMakie, GeometryBasics, LinearAlgebra, Quaternions
 import Quaternions: Quaternion as Quaternion
 
 # Import custom code and utility functions
-include("src/State_and_Conversions.jl")
-include("src/Rendering.jl")
-include("src/Transformations.jl")
-include("src/WindowManager.jl")
+include("..src/State_and_Conversions.jl")
+include("..src/Rendering.jl")
+include("..src/Transformations.jl")
+include("..src/WindowManager.jl")
 
 # Initialize the custom structs and utilities
 conversions = Conversions()
@@ -468,118 +468,3 @@ for t in 1:iterations
 end
 
 
-
-
-# DragonFly Mesh 
-
-using GLMakie, GeometryBasics, FileIO
-using LinearAlgebra, Quaternions
-using Quaternions: Quaternion as Quaternion
-
-# Import 3D models of the DragonFly
-body_model = load("Models/DragonFly/Body.stl")
-front_left_wing_model = load("Models/DragonFly/FrontLeft.stl")
-front_right_wing_model = load("Models/DragonFly/FrontRight.stl")
-hind_left_wing_model = load("Models/DragonFly/HindLeft.stl")
-hind_right_wing_model = load("Models/DragonFly/HindRight.stl")
-
-body = Observable(State()) # Create an observable state for the body
-front_left_wing = Observable(State()) # Create an observable state for the front left wing
-front_right_wing = Observable(State()) # Create an observable state for the front right wing
-hind_left_wing = Observable(State()) # Create an observable state for the hind left wing
-hind_right_wing = Observable(State()) # Create an observable state for the hind right wing
-
-body_mesh = lift(body) do st
-    R = quat2rotmatrix(st.q)
-    positions = body_model.vertex_attributes[1]
-    rotated_positions = [Point3f(R * Vec3f(p)) for p in positions]
-    faces = body_model.faces
-    GeometryBasics.mesh(rotated_positions, faces)
-end
-
-front_left_wing_mesh = lift(front_left_wing) do st
-    R = quat2rotmatrix(st.q)
-    positions = front_left_wing_model.vertex_attributes[1]
-    rotated_positions = [Point3f(R * Vec3f(p)) for p in positions]
-    faces = front_left_wing_model.faces
-    GeometryBasics.mesh(rotated_positions, faces)
-end
-
-front_right_wing_mesh = lift(front_right_wing) do st
-    R = quat2rotmatrix(st.q)
-    positions = front_right_wing_model.vertex_attributes[1]
-    rotated_positions = [Point3f(R * Vec3f(p)) for p in positions]
-    faces = front_right_wing_model.faces
-    GeometryBasics.mesh(rotated_positions, faces)
-end
-
-hind_left_wing_mesh = lift(hind_left_wing) do st
-    R = quat2rotmatrix(st.q)
-    positions = hind_left_wing_model.vertex_attributes[1]
-    rotated_positions = [Point3f(R * Vec3f(p)) for p in positions]
-    faces = hind_left_wing_model.faces
-    GeometryBasics.mesh(rotated_positions, faces)
-end
-
-hind_right_wing_mesh = lift(hind_right_wing) do st
-    R = quat2rotmatrix(st.q)
-    positions = hind_right_wing_model.vertex_attributes[1]
-    rotated_positions = [Point3f(R * Vec3f(p)) for p in positions]
-    faces = hind_right_wing_model.faces
-    GeometryBasics.mesh(rotated_positions, faces)
-end
-
-# Create a scene for the DragonFly
-s_dragonfly = Scene(camera=cam3d!)
-windowmanager.closeall() # Close all windows before displaying new ones
-windowmanager.display(s_dragonfly; names=["DragonFly Mesh"])
-
-# Draw the DragonFly body and wings
-meshscatter!(s_dragonfly, (0, 0, 0), marker=body_mesh, markersize=1)
-meshscatter!(s_dragonfly, (0, 0, 0), marker=front_left_wing_mesh, markersize=1)
-meshscatter!(s_dragonfly, (0, 0, 0), marker=front_right_wing_mesh, markersize=1)
-meshscatter!(s_dragonfly, (0, 0, 0), marker=hind_left_wing_mesh, markersize=1)
-meshscatter!(s_dragonfly, (0, 0, 0), marker=hind_right_wing_mesh, markersize=1)
-
-# Set the initial state of the DragonFly
-
-s1 = State()
-s1 = State(conversions.axisangle2quat([1, 0, 0], π / 3) * s1.q) # Rotate around x-axis by 60 degrees
-
-front_left_wing[] = s1 # Set the initial state of the front left wing
-front_right_wing[] = s1 # Set the initial state of the front right wing
-#----------------------------------------------------------------------------
-recording = Observable(true)
-global io_ref = Ref{Any}(nothing)  # To store the io handle globally
-
-on(events(s).keyboardbutton) do event
-    if event.action == Keyboard.press && event.key == Keyboard.q
-        recording[] = false
-    end
-end
-
-## Recorder
-# Open the video file and set up the listener ONCE
-@async begin
-    record(s, "Revised_Wing_Motion_Demo.mp4"; framerate=n_per_iteration/time_per_iteration) do io
-        io_ref[] = io  # Store the io handle for use in the listener
-
-        # Listener: record a frame only when wingstate changes and recording is on
-        wingstate_listener = on(wingstate) do new_state
-            if recording[] && io_ref[] !== nothing
-                recordframe!(io_ref[])
-            end
-        end
-
-        # Wait until recording is stopped or window is closed
-        while isopen(s) && recording[]
-            yield()  # Yield to event loop, no need to sleep
-        end
-
-        # Clean up
-        off(wingstate_listener)
-        io_ref[] = nothing
-    end
-end
-
-n_per_iteration/time_per_iteration

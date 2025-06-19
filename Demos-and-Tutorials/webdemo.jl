@@ -7,9 +7,9 @@ using WGLMakie, GeometryBasics, LinearAlgebra, Quaternions
 import Quaternions: Quaternion as Quaternion
 
 # Import your custom code and utility functions
-include("src/State_and_Conversions.jl")
-include("src/Rendering.jl")
-include("src/Transformations.jl")
+include("..src/State_and_Conversions.jl")
+include("..src/Rendering.jl")
+include("..src/Transformations.jl")
 
 conversions = Conversions()
 renderer = Renderer()
@@ -89,7 +89,7 @@ end
 
 # Load the wing model
 # YOU MIGHT NEED TO EDIT THIS PATH TO POINT TO YOUR ASSET DIRECTORY
-wing = load("Models/edited_wing.stl")  # Use the correct path relative to your project directory
+wing = load("../Models/edited_wing.stl")  # Use the correct path relative to your project directory
 
 # Create an observable mesh that rotates with vector_state
 wing_scale = 0.0075

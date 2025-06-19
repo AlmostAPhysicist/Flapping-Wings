@@ -2,10 +2,10 @@ using GLMakie, GeometryBasics, LinearAlgebra, Quaternions
 import Quaternions: Quaternion as Quaternion
 
 # Import custom code and utility functions
-include("src/State_and_Conversions.jl")
-include("src/Rendering.jl")
-include("src/Transformations.jl")
-include("src/WindowManager.jl")
+include("..src/State_and_Conversions.jl")
+include("..src/Rendering.jl")
+include("..src/Transformations.jl")
+include("..src/WindowManager.jl")
 
 # Initialize the custom structs and utilities
 conversions = Conversions()
