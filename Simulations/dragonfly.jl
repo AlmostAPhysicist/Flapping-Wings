@@ -1,6 +1,9 @@
+println("Starting DragonFly Simulation...\n\tBe patient, this might take a while to load the models and packages...\n")
 # Import necessary packages
+println("Loading packages...")
 using GLMakie, GeometryBasics, LinearAlgebra, Quaternions, FileIO
 import Quaternions: Quaternion as Quaternion
+println("Packages loaded successfully.")
 
 cd(@__DIR__) # Changing the current working directory from project root to the parent directory of this file so that pwd() and @__DIR__ match.
 # Import custom code and utility functions
@@ -17,6 +20,8 @@ conversions = Conversions()
 renderer = Renderer()
 transformations = Transformations()
 windowmanager = WindowManager()
+
+println("Custom structs and utilities initialized successfully.")
 
 # Defining Custom Mesh Transformation functions
 function translate_obj(obj::AbstractMesh, translation::AbstractVector)
@@ -124,6 +129,7 @@ begin # Attach the models to the state observables with fixed _models
     hindrightwing_model = attach2State(_hindrightwing_model, hindrightwing)
 end
 
+println("Models and positions defined successfully.")
 
 # --- The Controls and Data Plots ---
 #------------------------------------
@@ -153,7 +159,7 @@ theta_max_y_local = Observable(deg2rad(40))
 
 # Environment variables
 phase_between_front_and_hind = Observable(Float64(pi))           # Phase difference (constant for now)
-sync_omegas = Observable(true)                   # Toggle for synchronization
+sync_omegas = Observable(false)                   # Toggle for synchronization
 pause     = Observable(false)                    # New toggle for pause
 
 
@@ -175,7 +181,7 @@ initial_values = [
     dt[], phase_between_front_and_hind[], sync_omegas[], pause[]
 ]
 
-
+println("Initial values defined successfully.")
 
 # Create a main figure
 begin # Define Controls figure with plots and controls
@@ -231,18 +237,12 @@ begin # Define Controls figure with plots and controls
     # )
 
     dt_slider = SliderGrid(sg_env_var[1, 1], (label = "dt", range = 0.001:0.001:0.1, format = "{:.3f} s", startvalue = dt[]), width = Relative(1), tellwidth = false)
-    phase_front_hind_slider = SliderGrid(sg_env_var[1, 2], (label = "Phase Front-Hind", range = 0:0.01:2π, format = "{:.2f} rad", startvalue = phase_between_front_and_hind[]), width = Relative(1), tellwidth = false)
-
-    # 3.2 Toggles for Environment variables (boolean) using nested GridLayouts
-    # Sync Omegas toggle
-    gl_sync = GridLayout(sg_env_var[2, 1], tellwidth = false, width = Relative(2))
-    sync_label = Label(gl_sync[1, 1], L"Sync Omegas ($\omega_{x_\text{G}} = \omega_{y_\text{L}}$)")
-    sync_toggle = Toggle(gl_sync[1, 2], active = sync_omegas[])
-
-    # Pause toggle
-    gl_pause = GridLayout(sg_env_var[2, 2], tellwidth = false, width = Relative(2))
-    pause_label = Label(gl_pause[1, 1], "Pause")
-    pause_toggle = Toggle(gl_pause[1, 2], active = pause[])
+    phase_front_hind_slider = SliderGrid(sg_env_var[1, 2], (label = "Phase Front-Hind", range = 0:0.01:2π, format = "{:.2f} rad", startvalue = phase_between_front_and_hind[]), width = Relative(1), tellwidth = false)    # 3.2 Buttons for Environment variables (boolean) using nested GridLayouts
+    # Sync Omegas button
+    sync_button = Button(sg_env_var[2, 1], label=L"Sync Omegas (current: $\omega_{x_\text{G}} \neq \omega_{y_\text{L}}$)", tellwidth = false)
+    
+    # Pause/Play button
+    pause_button = Button(sg_env_var[2, 2], label="Pause", tellwidth = false)
 
     # 3.3 Reset button for environment variables as well as the save plots button
     save_plots_button = Button(sg_env_var[3, 1], label="Save Plots", tellwidth = false)
@@ -255,13 +255,12 @@ begin # Define Controls figure with plots and controls
     rowgap!(gl_main, Fixed(10))  # Spacing between plots and controls
     rowgap!(gl_controls, Fixed(1))  # Spacing between control rows
     # rowgap!(sg_env_var, 1, Fixed(1))
-    # rowgap!(sg_env_var, Fixed(1))  # Tight spacing within environment variables
-    rowgap!(gl_controls, 1, Fixed(20))
-    colgap!(gl_sync, Fixed(5))  # Space between label and toggle
-    colgap!(gl_pause, Fixed(5)) # Space between label and toggle
+    # rowgap!(sg_env_var, Fixed(1))  # Tight spacing within environment variables    rowgap!(gl_controls, 1, Fixed(20))
 
-    display(controls)
+    # display(controls)
 end
+
+println("Controls figure defined successfully.")
 
 begin # Define Updater Functions
     # Update Global X-axis rotation parameters
@@ -316,21 +315,32 @@ begin # Define Updater Functions
                 set_close_to!(sg_local.sliders[1], val)  # Ensure the slider reflects the new value
             end
         end
-    end
-    sync_omegas_updater = on(sync_toggle.active) do active
-        sync_omegas[] = active
-        if active
+    end    # Sync Omegas button updater
+    sync_button_updater = on(sync_button.clicks) do _event
+        # Toggle the sync state
+        if sync_button.clicks[]%2 == 1
+            sync_button.label = L"Unsync Omegas (current: $\omega_{x_\text{G}} = \omega_{y_\text{L}}$)"
+            sync_omegas[] = true
             println("Synchronization of omegas enabled.")
-        else
+        elseif sync_button.clicks[] != 0
+            sync_button.label = L"Sync Omegas (current: $\omega_{x_\text{G}} \neq \omega_{y_\text{L}}$)"
+            sync_omegas[] = false
+            sync_button.clicks[] = 0  # Reset the clicks to 0
             println("Synchronization of omegas disabled.")
         end
     end
-    # Pause toggle updater
-    pause_updater = on(pause_toggle.active) do active
-        pause[] = active
-        if active
+    
+    # Pause button updater
+    pause_button_updater = on(pause_button.clicks) do _event
+        # Toggle the pause state
+        if pause_button.clicks[]%2 == 1
+            pause_button.label = "Play"
+            pause[] = true
             println("Simulation paused.")
-        else
+        elseif pause_button.clicks[] != 0
+            pause_button.label = "Pause"
+            pause[] = false
+            pause_button.clicks[] = 0  # Reset the clicks to 0
             println("Simulation resumed.")
         end
     end
@@ -363,9 +373,13 @@ begin # Define Updater Functions
         set_close_to!(sg_local.sliders[2], phi_y_local[])
         set_close_to!(sg_local.sliders[3], theta_min_y_local[])
         set_close_to!(sg_local.sliders[4], theta_max_y_local[])
-        set_close_to!(sg_env_num.sliders[1], dt[])
-        set_close_to!(sg_env_num.sliders[2], phase_between_front_and_hind[])
-        # set_close_to!(sync_toggle, sync_omegas[])
+        set_close_to!(dt_slider.sliders[1], dt[])
+        set_close_to!(phase_front_hind_slider.sliders[1], phase_between_front_and_hind[])
+        # Reset buttons state
+        sync_button.clicks[] = 0
+        pause_button.clicks[] = 0
+        sync_button.label = L"Sync Omegas ($\omega_{x_\text{G}} \neq \omega_{y_\text{L}}$)"
+        pause_button.label = "Pause"
 
         println("Environment variables reset to default values.")
     end
@@ -382,50 +396,91 @@ begin # Define Updater Functions
         # Save the plots in the created directory
         save("$path/rotational_angle_plot.png", colorbuffer(ax_thetas))
         save("$path/angular_velocity_plot.png", colorbuffer(ax_angular_velocities))
-        println("Plots saved in $path/")
         save("$path/controls_figure.png", controls)
+        println("Plots saved in $path/")
     end
 
     # Record animation button updater
-    # Use the record_on_change_until function within Recorder.jl to record the animation
-
-    # Read the record_button.clicks. Set record_button.label to "Recording ($record_button.clicks[]==1 ? "Off" : "On"$)" to indicate whether recording is active or not.
-    # Whenever the recording has been set active and then back to inactive, reset recording_button.clicks to 0.
-
-    # Initialize the recording label as Off
+    # Use the record_on_change_until function within Recorder.jl to record the animation    # Read the record_button.clicks. Set record_button.label to "Recording ($record_button.clicks[]==1 ? "Off" : "On"$)" to indicate whether recording is active or not.
+    # Whenever the recording has been set active and then back to inactive, reset recording_button.clicks to 0.    # Initialize the recording label as Off
     global recording = Observable(false) # Observable to track recording state
+    global recording_start_time = 0.0    # Store when recording started
+    global recording_frame_rate = 0.0    # Store framerate when recording started
+    global elapsed_time_updater = nothing # Initialize as nothing to prevent errors
+    
     record_button.label = "Record (Off)"
     record_button_updater = on(record_button.clicks) do _event
         # Toggle the recording state
         if record_button.clicks[]%2 == 1
-            record_button.label = "Record (on)"
-
-            global ioref1 = Ref{Any}(nothing) # Reference to the IO object for recording
-            global ioref2 = Ref{Any}(nothing) # Reference to the IO object for recording
-
+            record_button.buttoncolor = RGBf(0.94, 0.2, 0.2)
+            record_button.label = "Recording On (0.00 s)"
+            recording[] = true
+            
+            # Store the start time and frame rate
+            recording_start_time = t[]
+            recording_frame_rate = 1/dt[]
+            
+            global ioref1 = Ref{Any}(nothing)
+            global ioref2 = Ref{Any}(nothing)
+            
             # Save the recordings under Media/Videos with the current timestamp
             timestamp = Dates.format(now(), "yyyy-mm-dd_HH-MM-SS")
             folder = joinpath(@__DIR__, "../Media/Videos", "Dragonfly_$timestamp")
             mkpath(folder)  # Create the folder if it doesn't exist
             filename1 = joinpath(folder, "controls.mp4")
             filename2 = joinpath(folder, "animation.mp4")
-
-            record_on_change_until(controls.scene, t, recording, ioref1, filename1; framerate=1/dt[])
-            record_on_change_until(s_dragonfly, t, recording, ioref2, filename2; framerate=1/dt[])
-            println("Recording started. Press the button again (or press 'r') to stop recording.")
+            
+            # Create an updater for the elapsed time display right in this context
+            # Only create a new updater if the previous one doesn't exist or has been turned off
+            global elapsed_time_updater = on(t) do t_new
+                if recording[]
+                    elapsed_seconds = t_new - recording_start_time
+                    record_button.label = "Recording On ($(round(elapsed_seconds, digits=2)) s)"
+                end
+            end
+            
+            try
+                record_on_change_until(controls.scene, t, recording, ioref1, filename1; framerate=1/dt[])
+                record_on_change_until(s_dragonfly, t, recording, ioref2, filename2; framerate=1/dt[])
+                println("Recording started. Press the button again to stop recording.")
+            catch e
+                @warn "Error starting recording: $(sprint(showerror, e))"
+                recording[] = false
+                record_button.buttoncolor = RGBf(0.94, 0.94, 0.94)
+                record_button.label = "Record (Off)"
+            end
         elseif record_button.clicks[] != 0
-
+            # Only try to turn off the updater if it exists
+            if elapsed_time_updater !== nothing
+                try
+                    off(elapsed_time_updater)
+                catch e
+                    @warn "Error turning off updater: $(sprint(showerror, e))"
+                end
+                elapsed_time_updater = nothing
+            end
+            record_button.buttoncolor = RGBf(0.94, 0.94, 0.94)
             record_button.label = "Record (Off)"
             recording[] = false  # Stop the recording
-            # Stop the recording
-            # global ioref1 = nothing  # Stop the recording for the controls figure
-            # global ioref2 = nothing  # Stop the recording for the scene
+            
+            # Reset recording variables
+            recording_start_time = 0.0
+            recording_frame_rate = 0.0
+            
+            # Force close any open recording
+            if ioref1[] !== nothing || ioref2[] !== nothing
+                ioref1[] = nothing
+                ioref2[] = nothing
+                GC.gc() # Force garbage collection
+            end
+            
             record_button.clicks[] = 0  # Reset the clicks to 0 after stopping the recording
-
             println("Recording stopped. Videos saved in Media/Videos/...")
         end
     end
 end
+
+println("Updater functions defined successfully.")
 
 # Plot the global and local theta and angular velocity on the same plot with lift functions to automatically update the plot
 times = lift(dt->0:dt:5*2π/initial_values[1], dt) # Time vector for the simulation
@@ -482,10 +537,12 @@ for i in wingstates
 end
 reflect(q::Quaternion, normal::AbstractVector) = Quaternion(0, normal...) * q * Quaternion(0, normal...)
 
+println("Rendering the Scenes...")
 windowmanager.closeall()
 windowmanager.display(controls, s_dragonfly; names=["Controls", "Scene"])  # Display the controls and the scene
 
 
+println("Simulation starting...")
 
 t = Observable(0.0)
 running = Observable(true)  # Flag to control the simulation loop
@@ -496,11 +553,20 @@ running = Observable(true)  # Flag to control the simulation loop
 
 function update_wings(t)
     frontrightwing[] = State(conversions.axisangle2quat([1, 0, 0], -theta_x_global(t[])))
-    hindrightwing[] = State(conversions.axisangle2quat([1, 0, 0], -theta_x_global(t[]+phase_between_front_and_hind[]/omega_x_global[])))
-    
+    # Handle the case where omega_x_global or omega_y_local is zero to avoid division by zero
+    if omega_x_global[] ≈ 0
+        hindrightwing[] = State(conversions.axisangle2quat([1, 0, 0], -theta_x_global(t[])))
+    else
+        hindrightwing[] = State(conversions.axisangle2quat([1, 0, 0], -theta_x_global(t[]+phase_between_front_and_hind[]/omega_x_global[])))
+    end
+
     # Apply local rotation around y-axis
     frontrightwing[] = State(conversions.coordinate_transform(conversions.axisangle2quat([0, 1, 0], theta_y_local(t[])), frontrightwing[].q)*frontrightwing[].q)
-    hindrightwing[] = State(conversions.coordinate_transform(conversions.axisangle2quat([0, 1, 0], theta_y_local(t[]+phase_between_front_and_hind[]/omega_y_local[])), hindrightwing[].q)*hindrightwing[].q)
+    if omega_y_local[] ≈ 0
+        hindrightwing[] = State(conversions.coordinate_transform(conversions.axisangle2quat([0, 1, 0], theta_y_local(t[])), hindrightwing[].q)*hindrightwing[].q)
+    else
+        hindrightwing[] = State(conversions.coordinate_transform(conversions.axisangle2quat([0, 1, 0], theta_y_local(t[]+phase_between_front_and_hind[]/omega_y_local[])), hindrightwing[].q)*hindrightwing[].q)
+    end
 
     # Reflect the left wings across the XZ plane
     frontleftwing[] = State(reflect(frontrightwing[].q, [0, 1, 0]))  # Reflect the quaternion across the XZ plane
