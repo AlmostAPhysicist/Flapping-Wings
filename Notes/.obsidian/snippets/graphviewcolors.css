@@ -1,0 +1,46 @@
+/* Set node colors in graph view */
+
+
+
+
+/* Node colors for dark  mode */
+
+.theme-dark .graph-view.color-fill {
+    color: #d8f3dc;
+    opacity: 1.0;
+}
+.theme-dark .graph-view.color-fill-unresolved {
+    color: #d8e9e6;
+    opacity: 1.0;
+}
+.theme-dark .graph-view.color-fill-tag {
+    color: #95d5b2; 
+    opacity: 1.0;
+}
+
+.theme-light .graph-view.color-fill-attachment {
+    color: #90e0ef; 
+    opacity: 1.0;
+}
+
+.theme-dark .graph-view.color-text {
+    color: #f2faff; 
+    opacity: 1.0;
+}
+
+
+
+
+/* Node colors for light mode */
+.theme-light .graph-view.color-fill {
+    color: #95d5b2;
+    opacity: 1.0;
+}
+.theme-light .graph-view.color-fill-unresolved {
+    color: #d8e9e6;
+    opacity: 1.0;
+}
+.theme-light .graph-view.color-fill-tag {
+    color: blue;
+    opacity: 1.0;
+}

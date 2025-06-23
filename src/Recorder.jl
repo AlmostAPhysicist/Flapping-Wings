@@ -124,3 +124,35 @@ function stop_recording!(until::Observable, ioref::Union{Ref, Nothing}=nothing)
     @info "Recording stopped programmatically"
 end
 
+struct Recorder
+    """
+    record_on_change_until(s::Scene, observable::Observable, until::Observable, ioref::Ref, filename::String; 
+                          framerate::Real=30, shortcut::Bool=true)
+
+    Record a scene whenever an observable changes until a condition is met. Includes robust error handling
+    for IO errors and proper cleanup of resources.
+
+    # Arguments
+    - `s::Scene`: The scene to record
+    - `observable::Observable`: The observable to watch for changes
+    - `until::Observable`: Recording stops when this becomes false
+    - `ioref::Ref`: Reference to store the IO handle
+    - `filename::String`: Filename for the recording (timestamp will be added if no extension)
+    - `framerate::Real=30`: Frames per second for the recording
+    - `shortcut::Bool=true`: Whether to enable the 'r' key shortcut to stop recording
+
+    """
+    record_on_change_until
+    """
+    stop_recording!(until::Observable, ioref::Union{Ref, Nothing}=nothing)
+    Stop an active recording by setting the until observable to false.
+    Optionally can clear the IO reference to ensure proper cleanup.
+    # Arguments
+    - `until::Observable`: The observable that controls when to stop recording
+    - `ioref::Union{Ref, Nothing}=nothing`: Optional reference to the IO handle to clear
+    """
+    stop_recording!
+    function Recorder()
+        new(record_on_change_until, stop_recording!)
+    end
+end

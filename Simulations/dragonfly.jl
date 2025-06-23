@@ -170,10 +170,113 @@ angular_velocity_x_global(t) = -omega_x_global[] * (theta_max_x_global[] - theta
 theta_y_local(t) = map_range(sin(omega_y_local[] * t + phi_y_local[]), (-1, 1), (theta_min_y_local[], theta_max_y_local[]))
 angular_velocity_y_local(t) = omega_y_local[] * (theta_max_y_local[] - theta_min_y_local[]) / 2 * cos(omega_y_local[] * t + phi_y_local[]) # Analytical derivative of theta_y_local
 
+# # Integrated theta value plots
+# #-----------------------------
+# # Plot theta, angular velocity and time integrated theta values for a given time range
+# times = 0:dt[]:100*2π/(lcm(omega_x_global[], omega_y_local[])) # Time vector for the simulation
+# thetas = theta_x_global.(times) # Calculate theta values for the global x-axis rotation
+# angular_velocities_x = angular_velocity_x_global.(times) # Calculate angular velocity values for the global x-axis rotation
 
-n = rand()
-theta_x_global(n)
-theta_x_global(n + pi/omega_x_global[])
+# # Integrating angular_velocity_x_global with time to get the integrated theta values
+
+# # Euler's method for numerical integration
+# integrated_thetas_x_euler = zeros(length(times))
+# integrated_thetas_x_euler[1] = theta_x_global(times[1]) # Initial value at t=0
+# for i in 2:length(times)
+#     # Using angular velocity at the current time point to predict the next value
+#     x_n_0 = integrated_thetas_x_euler[i-1] # Previous value
+#     v_n_0 = angular_velocity_x_global(times[i-1]) # Angular velocity at the previous time point
+#     integrated_thetas_x_euler[i] = x_n_0 + v_n_0 * dt[] # Euler's method update
+# end
+
+# # Calculate the maximum absolute difference to verify integration accuracy
+# max_diff = maximum(abs.(thetas - integrated_thetas_x_euler))
+# println("Maximum difference between analytical and integrated theta values: $max_diff")
+
+# # Runge-Kutta 4 method for numerical integration
+# integrated_thetas_x_rk4 = zeros(length(times))
+# integrated_thetas_x_rk4[1] = theta_x_global(times[1]) # Initial value at t=0
+# for i in 2:length(times)
+#     t_n = times[i-1] # Current time
+#     x_n_0 = integrated_thetas_x_rk4[i-1] # Previous value
+#     v_n_0 = angular_velocity_x_global(t_n) # Angular velocity at the previous time point
+
+#     k1 = v_n_0 * dt[] # First step
+#     k2 = angular_velocity_x_global(t_n + dt[]/2) * dt[] # Second step
+#     k3 = angular_velocity_x_global(t_n + dt[]/2) * dt[] # Third step
+#     k4 = angular_velocity_x_global(t_n + dt[]) * dt[] # Fourth step
+
+#     integrated_thetas_x_rk4[i] = x_n_0 + (k1 + 2*k2 + 2*k3 + k4) / 6 # RK4 update
+# end
+# # Calculate the maximum absolute difference to verify integration accuracy
+# max_diff_rk4 = maximum(abs.(thetas - integrated_thetas_x_rk4))
+# println("Maximum difference between analytical and RK4 integrated theta values: $max_diff_rk4")
+
+# # Runge-Kutta 5 method for numerical integration (Butcher's method)
+# integrated_thetas_x_rk5 = zeros(length(times))
+# integrated_thetas_x_rk5[1] = theta_x_global(times[1]) # Initial value at t=0
+# for i in 2:length(times)
+#     t_n = times[i-1] # Current time
+#     x_n = integrated_thetas_x_rk5[i-1] # Previous value
+#     h = dt[] # Time step
+    
+#     # Standard RK5 coefficients
+#     k1 = angular_velocity_x_global(t_n) * h
+#     k2 = angular_velocity_x_global(t_n + h/4) * h
+#     k3 = angular_velocity_x_global(t_n + 3*h/8) * h
+#     k4 = angular_velocity_x_global(t_n + 12*h/13) * h
+#     k5 = angular_velocity_x_global(t_n + h) * h
+#     k6 = angular_velocity_x_global(t_n + h/2) * h
+    
+#     # RK5 update using the correct weighted combination
+#     integrated_thetas_x_rk5[i] = x_n + (16*k1 + 25*k3 + 25*k4 + 25*k5 + 9*k6) / 100
+# end
+# # Calculate the maximum absolute difference to verify integration accuracy
+# max_diff_rk5 = maximum(abs.(thetas - integrated_thetas_x_rk5))
+# println("Maximum difference between analytical and RK5 integrated theta values: $max_diff_rk5")
+
+# # Varlet Integration method for numerical integration
+# integrated_thetas_x_varlet = zeros(length(times))
+# integrated_thetas_x_varlet[1] = theta_x_global(times[1]) # Initial value at t=0
+# for i in 2:length(times)
+#     t_n = times[i-1] # Current time
+#     x_n_0 = integrated_thetas_x_varlet[i-1] # Previous value
+#     v_n_0 = angular_velocity_x_global(t_n) # Angular velocity at the previous time point
+
+#     k1 = v_n_0 * dt[] # First step
+#     k2 = angular_velocity_x_global(t_n + dt[]) * dt[] # Second step
+
+#     integrated_thetas_x_varlet[i] = x_n_0 + (k1 + k2) / 2 # Varlet update
+# end
+# # Calculate the maximum absolute difference to verify integration accuracy
+# max_diff_varlet = maximum(abs.(thetas - integrated_thetas_x_varlet))
+# println("Maximum difference between analytical and Varlet integrated theta values: $max_diff_varlet")
+
+# # Print the maximum differences for all integration methods
+# println("Maximum differences:")
+# println("Euler: $max_diff")
+# println("RK4: $max_diff_rk4")
+# println("RK5: $max_diff_rk5")
+# println("Varlet: $max_diff_varlet")
+
+# # Create a figure for the plots
+
+# fig = Figure()
+# ax_thetas = Axis(fig[1, 1], title="Theta vs Time", xlabel="Time (s)", ylabel="Theta (rad)")
+# ax_angular_velocities = Axis(fig[1, 2], title="Angular Velocity vs Time", xlabel="Time (s)", ylabel="Angular Velocity (rad/s)")
+
+# # Plot theta and integrated theta values
+# lines!(ax_thetas, times, thetas, label="Theta X Global", color=:red)
+# lines!(ax_thetas, times, integrated_thetas_x_euler, label="Integrated Theta X Global", color=:orange)
+# lines!(ax_angular_velocities, times, angular_velocities_x, label="Angular Velocity X Global", color=:red)
+# lines!(ax_thetas, times, integrated_thetas_x_rk4, label="RK4 Integrated Theta X Global", color=:green)
+# lines!(ax_thetas, times, integrated_thetas_x_rk5, label="RK5 Integrated Theta X Global", color=:blue)
+# lines!(ax_thetas, times, integrated_thetas_x_varlet, label="Varlet Integrated Theta X Global", color=:purple)
+
+# # Add a legend to the plots
+# axislegend(ax_thetas, labelsize=10, patchsize=(10,4), padding=2, colgap=1, rowgap=1, patchlabelgap=1)
+# axislegend(ax_angular_velocities, labelsize=10, patchsize=(10,4), padding=2, colgap=1, rowgap=1, patchlabelgap=1)
+
 
 initial_values = [
     omega_x_global[], phi_x_global[], theta_min_x_global[], theta_max_x_global[],

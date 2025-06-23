@@ -1,0 +1,2 @@
+/* Align math blocks to the left */
+mjx-container[jax="CHTML"][display="true"] { display: block; text-align: left !important; }

@@ -1,0 +1,198 @@
+{
+  "main": {
+    "id": "e4a415a5d16b43ca",
+    "type": "split",
+    "children": [
+      {
+        "id": "73f29dbc7b490aef",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "f3e299486358cedf",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Quaternions and Rotations/About Quaternions and Rotations.md",
+                "mode": "preview",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "About Quaternions and Rotations"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "4435b4e09379fcd0",
+    "type": "split",
+    "children": [
+      {
+        "id": "fe4011df52749863",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "d571b193cd66aa9d",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": true
+              },
+              "icon": "lucide-folder-closed",
+              "title": "Files"
+            }
+          },
+          {
+            "id": "1ee47aa1d0bc46c5",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "maxde",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "Search"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 306.5
+  },
+  "right": {
+    "id": "53b696086f36b957",
+    "type": "split",
+    "children": [
+      {
+        "id": "bc29ceec1ce3e4d0",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "4fb037c988c0d802",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "Projects/Wboson/Isolation/Understanding CMS Experiments.md",
+                "followCursor": true,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "Outline of Understanding CMS Experiments"
+            }
+          },
+          {
+            "id": "ea7317d71dc1cbb7",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "Fresh Start - Shortened Code/Real Data.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "Backlinks for Real Data"
+            }
+          },
+          {
+            "id": "3a75d28443a410fd",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "Projects/Wboson/Isolation/Understanding CMS Experiments.md",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "Outgoing links from Understanding CMS Experiments"
+            }
+          }
+        ],
+        "currentTab": 1
+      }
+    ],
+    "direction": "horizontal",
+    "width": 330.5,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:Open quick switcher": false,
+      "graph:Open graph view": false,
+      "command-palette:Open command palette": false,
+      "audio-recorder:Start/stop recording": false,
+      "obsidian-custom-frames:Open Google Calendar": false,
+      "obsidian-custom-frames:Open Google Tasks": false,
+      "companion:Toggle completion": false,
+      "obsidian-excalidraw-plugin:New drawing": false
+    }
+  },
+  "active": "f3e299486358cedf",
+  "lastOpenFiles": [
+    "Quaternions and Rotations/Computational Efficiency.md",
+    "Quaternions and Rotations/Finding the velocity functions and their transitions.md",
+    "Quaternions and Rotations/Project Coordinates and Rotational Conventions for the project.md",
+    "Quaternions and Rotations/Vortex Shedding.md",
+    "PDFs/Finding the velocity functions and their transitions.pdf",
+    "PDFs/Project Coordinates and Rotational Conventions for the project.pdf",
+    "PDFs/Computational Efficiency.pdf",
+    "Quaternions and Rotations/About Quaternions and Rotations.md",
+    "PDFs/About Quaternions and Rotations.pdf",
+    "Quaternions and Rotations/attachments/Drawing 25-06-11-01-13-07.md",
+    "Quaternions and Rotations/attachments/Drawing 25-06-11-01-13-07.svg",
+    "Quaternions and Rotations/attachments/Drawing 25-06-23-02-32-04.md",
+    "Quaternions and Rotations/attachments/Drawing 25-06-23-02-32-04.svg",
+    "Quaternions and Rotations/attachments/Drawing 25-06-23-12-45-59.md",
+    "Quaternions and Rotations/attachments/Drawing 25-06-23-12-45-59.svg",
+    "Quaternions and Rotations/attachments/Drawing 25-06-09-08-27-11.md",
+    "Quaternions and Rotations/attachments/Drawing 25-06-09-04-19-25.md",
+    "Quaternions and Rotations/attachments/Drawing 25-06-09-04-19-25.svg",
+    "Quaternions and Rotations/attachments/Drawing 25-06-09-05-28-08.md",
+    "Quaternions and Rotations/attachments/Drawing 25-06-09-05-28-08.svg",
+    "Quaternions and Rotations/attachments/Drawing 25-06-09-08-27-11.svg",
+    "Quaternions and Rotations/attachments/Drawing 25-06-09-05-28-08.dark.svg",
+    "Quaternions and Rotations/attachments/Drawing 25-06-09-05-28-08.light.png",
+    "Quaternions and Rotations/attachments/Drawing 25-06-09-05-28-08.light.svg",
+    "Quaternions and Rotations/attachments/Drawing 25-06-09-05-28-08.dark.png",
+    "PDFs",
+    "Conditional Variational Auto-Encoders.md",
+    "Quaternions and Rotations/attachments/Drawing 25-06-23-01-30-42.md",
+    "Excalidraw/Drawing 25-06-23-01-28-41.md",
+    "Excalidraw",
+    "Quaternions and Rotations/[[Quaternions.md",
+    "Quaternions and Rotations/().md",
+    "Quaternions and Rotations/Quaternions.md",
+    "Quaternions and Rotations/attachments/Drawing 25-06-12-11-40-34.md",
+    "Quaternions and Rotations/attachments/attachments",
+    "Quaternions and Rotations/attachments",
+    "Fresh Start - Shortened Code/Real Data.md",
+    "Fresh Start - Shortened Code/Lumi_2_v1.md",
+    "GPT Project - BeamPipe Imaging with Scouting/combineHistogramsFromFileList.md",
+    "Projects/Scouting/100 Files.md",
+    "GPT Project - BeamPipe Imaging with Scouting/Rerunning the TreeMaker.md",
+    "GPT Project - BeamPipe Imaging with Scouting/ScoutingTreeMakerRun3.md",
+    "GPT Project - BeamPipe Imaging with Scouting/vertex_xy_global_combined_with_colorbar.pdf",
+    "Fresh Start - Shortened Code/Real Data Analyzer Files.md",
+    "Fresh Start - Shortened Code/Real Data.pdf",
+    "Untitled.canvas"
+  ]
+}

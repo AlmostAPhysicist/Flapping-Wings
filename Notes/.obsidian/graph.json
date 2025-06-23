@@ -1,0 +1,44 @@
+{
+  "collapse-filter": false,
+  "search": "-path:attachments  ",
+  "showTags": false,
+  "showAttachments": false,
+  "hideUnresolved": true,
+  "showOrphans": true,
+  "collapse-color-groups": false,
+  "colorGroups": [
+    {
+      "query": "tag:#index",
+      "color": {
+        "a": 1,
+        "rgb": 3638910
+      }
+    },
+    {
+      "query": "tag:#neuralcenter",
+      "color": {
+        "a": 1,
+        "rgb": 15744592
+      }
+    },
+    {
+      "query": "tag:#excalidraw",
+      "color": {
+        "a": 1,
+        "rgb": 9494767
+      }
+    }
+  ],
+  "collapse-display": false,
+  "showArrow": false,
+  "textFadeMultiplier": -0.5,
+  "nodeSizeMultiplier": 1.74610962962963,
+  "lineSizeMultiplier": 1.44877037037037,
+  "collapse-forces": false,
+  "centerStrength": 0.483367983367983,
+  "repelStrength": 14.5738045738046,
+  "linkStrength": 0.703742203742204,
+  "linkDistance": 208,
+  "scale": 0.29504835562998477,
+  "close": true
+}
