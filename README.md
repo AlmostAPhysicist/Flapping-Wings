@@ -120,42 +120,26 @@ First, you need to install Julia on your computer:
 
 You can look at the OS Specific installation instructions for Julia.
 
-[**For Windows, I recommend installing it from the Microsoft Store** that installs Julia and JuliaUp (the version manager).](https://apps.microsoft.com/detail/9NJNWW8PVKMN?hl=en-us&gl=US&ocid=pdpshare)
+[**For Windows, I recommend installing Julia from the Microsoft Store** (which installs Julia and JuliaUp, the version manager).](https://apps.microsoft.com/detail/9NJNWW8PVKMN?hl=en-us&gl=US&ocid=pdpshare)
 
-A more ubiquitous/manual way to download it is: 
-
-1. Go to [https://julialang.org/downloads/](https://julialang.org/downloads/)
-2. Download Julia for your operating system (Windows, macOS, or Linux)
-3. Follow the installation instructions for your platform
+For all platforms, **please follow the official [Julia installation instructions here](https://julialang.org/install/)**. This page always has the latest recommended method and platform-specific steps.
 
 <details>
-<summary> Detailed Julia Installation Instructions</summary>
+<summary>Detailed Julia Installation Instructions</summary>
 
-[It is Highly Recommended to take a look at this documentation for your OS](https://julialang.org/install/)
+[See the official Julia documentation for your OS.](https://julialang.org/install/)
 
 **For Windows:**
-1. Download the Windows installer (.exe file)
-2. Run the installer and follow the setup wizard
-3. Make sure to check "Add Julia to PATH" during installation
-4. Open Command Prompt or PowerShell and type `julia` to verify installation
-
-**For macOS:**
-1. Download the macOS installer (.dmg file)
-2. Open the .dmg file and drag Julia to your Applications folder
-3. Open Terminal and add Julia to your PATH by adding this line to your `~/.bash_profile` or `~/.zshrc`:
+1. The recommended way is to use [JuliaUp](https://julialang.org/install/), which you can install from the Microsoft Store or via the command:
    ```bash
-   export PATH="/Applications/Julia-1.x.app/Contents/Resources/julia/bin:$PATH"
+   winget install --name Julia --id 9NJNWW8PVKMN -e -s msstore
    ```
-4. Restart Terminal and type `julia` to verify installation
+2. If you cannot use the Microsoft Store, follow the manual instructions on the [downloads page](https://julialang.org/downloads/).
 
-**For Linux:**
-1. Download the Linux tarball (.tar.gz file)
-2. Extract it to a directory like `/opt/julia`
-3. Add Julia to your PATH in your `~/.bashrc` or `~/.profile`:
-   ```bash
-   export PATH="/opt/julia/bin:$PATH"
-   ```
-4. Restart your terminal and type `julia` to verify installation
+**For macOS and Linux:**
+- Follow the platform-specific instructions on the [Julia install page](https://julialang.org/install/), which covers both JuliaUp and manual installation.
+
+**Note:** If you are behind a firewall, ensure that `julialang.org` and its subdomains are accessible.
 
 </details>
 
