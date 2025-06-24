@@ -587,6 +587,22 @@ Refer to `Demos-and-Tutorials/filepaths.jl`
 
 ---
 
+## Other Uses
+This repository is not limited to dragonfly visualization. It provides a general-purpose framework for:
+
+- **Rigid Body Rotations & Translations**: Visualize and animate arbitrary 3D rigid body motions using quaternions, rotation matrices, and Euler angles.
+- **Quaternion Operations**: Explore quaternion algebra, composition, inversion, and interpolation (SLERP) with interactive demos.
+- **Coordinate Transformations**: Convert between different reference frames and visualize coordinate axes in 3D.
+- **Custom 3D Animations**: Load and animate your own models (e.g., .stl, .obj) to study motion, orientation, or kinematics.
+- **Scientific Plotting**: Generate high-quality 3D plots and visualizations for research or teaching.
+- **Educational Demos**: Use the code and notes as a resource for learning about 3D geometry, transformations, and visualization in Julia.
+
+Much of the reusable code for these features is in the `src/` folder. For mathematical background and further explanations, see the `Notes/` directory, which includes both editable Obsidian notes and PDFs.
+
+If you are interested in general 3D visualization, quaternion mathematics, or coordinate transformations, this repository can serve as a flexible starting point for your own projects.
+
+---
+
 ## Troubleshooting
 
 ### Common Issues
