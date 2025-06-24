@@ -120,7 +120,7 @@ First, you need to install Julia on your computer:
 
 You can look at the OS Specific installation instructions for Julia.
 
-For Windows, I recommend installing it from the Microsoft Store that installs Julia and JuliaUp (the version manager).
+[**For Windows, I recommend installing it from the Microsoft Store** that installs Julia and JuliaUp (the version manager).](https://apps.microsoft.com/detail/9NJNWW8PVKMN?hl=en-us&gl=US&ocid=pdpshare)
 
 A more ubiquitous/manual way to download it is: 
 
@@ -130,6 +130,8 @@ A more ubiquitous/manual way to download it is:
 
 <details>
 <summary> Detailed Julia Installation Instructions</summary>
+
+[It is Highly Recommended to take a look at this documentation for your OS](https://julialang.org/install/)
 
 **For Windows:**
 1. Download the Windows installer (.exe file)
