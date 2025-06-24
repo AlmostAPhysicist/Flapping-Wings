@@ -6,6 +6,73 @@ Demo Video:
 
 ![Dragonfly Demo](Media/Videos/Dragonfly_2025-06-23_15-46-34/combined.gif)
 
+---
+
+## Getting Started
+
+To get started with the code, you need to download it to your device. You can, however, also use some features online (see [Running The Simulation Online](#running-the-simulation-online) below).
+
+### Clone the Entire Repository
+
+To clone the full repository using Git, run:
+
+```bash
+git clone https://github.com/AlmostAPhysicist/Flapping-Wings.git
+```
+
+This will create a local copy of the project on your computer. 
+
+<details>
+<summary>
+More about Git
+</summary>
+
+Optionally, you could provide an additional argument for the folder name:
+```bash
+git clone https://github.com/AlmostAPhysicist/Flapping-Wings.git MyRootFolder
+```
+This will clone the repository into a folder named `MyRootFolder` instead of the default.
+
+To update your local copy with the latest changes from the online repository, use:
+```bash
+git pull
+```
+Run this command inside your project folder to fetch and merge any updates.
+
+Alternatively, you can use the following two-step process:
+```bash
+git fetch
+git merge
+```
+- `git fetch` downloads the latest changes from the remote repository but does **not** modify your working files.
+- `git merge` applies those fetched changes to your local branch.
+
+`git pull` is essentially a shortcut that combines `git fetch` and `git merge` in one step. Using `fetch` and `merge` separately gives you more control, for example, to review changes before merging.
+
+(Be sure to resolve conflicts correctly if you make any changes to your local files)
+
+For more information on git, Refer to:
+- [GitHub Documentation](https://docs.github.com/en/get-started/git-basics)
+- [Recommended Youtube Tutorial on Git and GitHub](https://youtu.be/K6Q31YkorUE?si=f-pDlVyrMisFwk-v)
+</details>
+
+You can also simply download the Zip file from under the Code (a green tab) on the repository page (under the Local tab)
+
+### Download a Specific Folder
+
+If you only need a particular folder (such as `Notes`), you can use [download-directory.github.io](https://download-directory.github.io/):
+
+<details>
+
+1. Go to [https://download-directory.github.io/](https://download-directory.github.io/)
+2. Paste the URL of the folder you want to download, for example:  
+   `https://github.com/AlmostAPhysicist/Flapping-Wings/tree/main/Notes`
+3. Download the generated ZIP file and extract it on your device.
+
+</details>
+
+---
+
 ## Quick Start
 
 If you have [Julia Programming Language](https://julialang.org/) Installed and are setup with all the dependencies:
@@ -631,7 +698,7 @@ This project is open source. Please respect the licenses of included 3D models a
 - [Orientation, Rotation, Velocity and Acceleration, and the SRM](https://www.sedris.org/wg8home/Documents/WG80485.pdf) by Paul Berner
 - [3Blue1Brown Youtube Video (with a 3D interactive tool linked in the description)](https://youtu.be/zjMuIxRvygQ?si=j_nJX0ZSLYN_CF_Q) by Grant Sanderson
 - [Wikipedia Page on Euler Angles](https://en.wikipedia.org/wiki/Euler_angles)
-(Other sources have been linked within `Notes`)
+(Other sources have been linked within the `Notes` folder files)
 
 ### Julia Programming
 - [Julia Documentation](https://docs.julialang.org/)
