@@ -20,7 +20,7 @@ end
 
 
 function interpolate_vector(
-    v1::Observable{AbstractVector{<:Real}},
+    v1::Observable{<:AbstractVector{<:Real}},
     v2::AbstractVector{<:Real},
     axis::Union{AbstractVector{<:Real},Nothing}=nothing;
     n::Int=100, time::Real=1.0, rate_function=t -> t
