@@ -679,6 +679,7 @@ end
 update_wings(t)  # Initial update to set the initial state of the wings
 
 
+
 while isopen(controls.scene) && isopen(s_dragonfly) && running[]  # Main loop to keep the simulation running
 
     if !pause[]  # Check if the simulation is paused
