@@ -679,7 +679,6 @@ end
 update_wings(t)  # Initial update to set the initial state of the wings
 
 
-
 while isopen(controls.scene) && isopen(s_dragonfly) && running[]  # Main loop to keep the simulation running
 
     if !pause[]  # Check if the simulation is paused
@@ -694,3 +693,261 @@ while isopen(controls.scene) && isopen(s_dragonfly) && running[]  # Main loop to
         sleep(dt[])
     end
 end
+
+
+
+# t[] = rand()
+# update_wings(t)  # Initial update to set the initial state of the wings
+# notify(frontleftwing)
+# notify(frontrightwing)
+# notify(hindleftwing)
+# notify(hindrightwing)
+
+
+# frontrightwing[] = State(conversions.axisangle2quat([1, 0, 0], -theta_x_global(t[])))
+# frontrightwing[] = State(Quaternion(normalize(rand(4))...))
+
+
+
+
+# s = Scene(camera=cam3d!)
+
+# a = Observable(Point3{Float64}(0.0, 0.0, 0.0))
+# meshscatter!(s, Point3{Float64}(0.0, 0.0, 0.0), marker=lift(a -> Sphere(a, 1.0), a), markersize=1, space=:data)
+# a[] = Point3(1.0, 1.0, 1.0)  # Update the observable to trigger the meshscatter update
+# notify(a)
+
+
+# s = Scene(camera=cam3d!)
+
+# a = Observable(Point3{Float64}(0.0, 0.0, 0.0))
+# mesh!(s, lift(a -> Sphere(a, 1.0), a), space=:data)
+# a[] = Point3(1.0, 1.0, 1.0)  # Update the observable to trigger the meshscatter update
+# notify(a)
+
+
+
+# # Create a scene
+# s = Scene(camera=cam3d!)
+
+# # Create the meshscatter plot
+# plot = meshscatter!(s, [Point3(0.0, 0.0, 0.0)], marker=[Sphere(Point3(0.0, 0.0, 0.0), 1.0)], markersize=1, space=:data)
+
+# # Define a ComputeGraph node for the marker
+# map!(plot.attributes, [], :marker) do
+#     # This could be driven by external input or computation
+#     return [Sphere(Point3(1.0, 1.0, 1.0), 1.0)]
+# end
+
+# # Update the plot with the new marker
+# Makie.update!(plot, marker=plot.attributes[:marker])
+
+# # Display the scene
+# display(s)
+
+
+
+# # Create a scene
+# s = Scene(camera=cam3d!)
+
+# # Define the Observable for the sphere's center position
+# a = Observable(Point3{Float64}(0.0, 0.0, 0.0))
+
+# # Create an Observable for the marker attribute
+# marker_obs = lift(a -> [Sphere(a, 1.0)], a)
+
+# # Create the meshscatter plot, passing the marker Observable
+# plot = meshscatter!(s, [Point3(0.0, 0.0, 0.0)], marker=marker_obs, markersize=1, space=:data)
+
+# # Update the Observable to trigger the update
+# a[] = Point3(1.0, 1.0, 1.0)
+# notify(a)
+
+
+
+
+
+# # Create a scene
+# s = Scene(camera=cam3d!)
+
+# # Define the Observable for the sphere's center position
+# a = Observable(Point3{Float64}(0.0, 0.0, 0.0))
+
+# # Create the meshscatter plot with an initial static marker
+# plot = meshscatter!(s, Point3(0.0, 0.0, 0.0), marker=Sphere(Point3(0.0, 0.0, 0.0), 1.0), markersize=1, space=:data)
+
+# # Map the Observable to a ComputeGraph node with a unique name
+# map!(plot.attributes, [], :custom_marker) do
+#     return Sphere(a[], 1.0)  # Single Sphere object
+# end
+
+# # Listen to the Observable and trigger Makie.update!
+# on(a) do val
+#     Makie.update!(plot, marker=plot.attributes[:custom_marker])
+# end
+
+# # Update the Observable to trigger the update
+# a[] = Point3(1.0, 1.0, 1.0)
+# notify(a)
+
+
+# update!(plot, marker=Sphere(Point3(100.0, 1.0, 1.0), 1.0))  # Update the marker with the new position
+# # Display the scene
+# display(s)
+
+
+
+
+
+# using GLMakie
+
+
+# # Create a scene
+# s = Scene(camera=cam3d!)
+
+# # Create the meshscatter plot with an initial static marker
+# plot = meshscatter!(s, Point(0.0, 0.0, 0.0), marker=Sphere(Point(0.0, 0.0, 0.0), 1.0), markersize=1, space=:data)
+
+# # Update the marker using Makie.update!
+# Makie.update!(plot, marker=Sphere(Point3(2.0, 1.0, 1.0), 1.0)) # Does NOT work as expected, the marker is not updated in the scene
+# Makie.update!(plot, color=:orange) # Works as expected, the color is updated in the scene
+# Makie.update!(plot, markersize=2) # Works as expected, the markersize is updated in the scene
+
+# typeof(plot.attributes) # returns ComputePipeline.ComputeGraph
+
+# plot.attributes
+# # Returns 
+# # ComputeGraph():
+# #   Inputs:
+# #     :alpha            => Input(:alpha, 1.0)
+# #     :arg1             => Input(:arg1, [0.0, 0.0, 0.0])
+# #     :backlight        => Input(:backlight, 0.0)
+# #     :clip_planes      => Input(:clip_planes, Plane3f[])
+# #     :color            => Input(:color, orange)
+# #     :colormap         => Input(:colormap, viridis)
+# #     :colorrange       => Input(:colorrange, Makie.Automatic())
+# #     :colorscale       => Input(:colorscale, identity)
+# #     :cycle            => Input(:cycle, [:color])
+# #     :cycle_index      => Input(:cycle_index, 1)
+# #     :depth_shift      => Input(:depth_shift, 0.0)
+# #     :diffuse          => Input(:diffuse, 1.0)
+# #     :dim_conversions  => Input(:dim_conversions, Makie.DimConversions((Observable{Union{Nothing, Makie.AbstractDimConversion}}(nothing), Observable{Union{Nothing, Makie.AbstractDimConversion}}(nothing), Observable{Union{Nothing, Makie.AbstractDimConversion}}(nothing))))
+# #     :f32c             => Input(:f32c, nothing)
+# #     :fxaa             => Input(:fxaa, true)
+# #     :highclip         => Input(:highclip, Makie.Automatic())
+# #     :inspectable      => Input(:inspectable, true)
+# #     :inspector_clear  => Input(:inspector_clear, Makie.Automatic())
+# #     :inspector_hover  => Input(:inspector_hover, Makie.Automatic())
+# #     :inspector_label  => Input(:inspector_label, Makie.Automatic())
+# #     :interpolate      => Input(:interpolate, true)
+# #     :lowclip          => Input(:lowclip, Makie.Automatic())
+# #     :marker           => Input(:marker, Sphere{Float64}([2.0, 1.0, 1.0], 1.0))
+# #     :markersize       => Input(:markersize, 2)
+# #     :matcap           => Input(:matcap, nothing)
+# #     :material         => Input(:material, nothing)
+# #     :model            => Input(:model, [1.0 0.0 0.0 0.0; 0.0 1.0 0.0 0.0; 0.0 0.0 1.0 0.0; 0.0 0.0 0.0 1.0])
+# #     :nan_color        => Input(:nan_color, transparent)
+# #     :overdraw         => Input(:overdraw, false)
+# #     :palette_lookup   => Input(:palette_lookup, Dict(:color => :color))
+# #     :palettes         => Input(:palettes, Attributes())
+# #     :rotation         => Input(:rotation, 0.0)
+# #     :shading          => Input(:shading, true)
+# #     :shininess        => Input(:shininess, 32.0)
+# #     :space            => Input(:space, data)
+# #     :specular         => Input(:specular, 0.2)
+# #     :ssao             => Input(:ssao, false)
+# #     :transform_func   => Input(:transform_func, identity)
+# #     :transform_marker => Input(:transform_marker, true)
+# #     :transformation   => Input(:transformation, automatic)
+# #     :transparency     => Input(:transparency, false)
+# #     :uv_transform     => Input(:uv_transform, Makie.Automatic())
+# #     :visible          => Input(:visible, true)
+
+# #   Outputs:
+# #     :alpha                      => Computed(:alpha, 1.0)
+# #     :alpha_colormap             => Computed(:alpha_colormap, ColorTypes.RGBA{Float32}[RGBA(0.267004, 0.004874, 0.329415, 1.0), RGBA(0.26851, 0.009605, 0.335427, 1.0), RGBA(0.269944, 0.014625, 0.341379, 1.0), RGBA(0.271305, 0.019942, 0.347269, 1.0), RGBA(0.272594, 0.025563, 0.353093, 1.0), RGBA(0.273809, 0.031497, 0.358853, 1.0), RGBA(0.274952, 0.037752, 0.364543, 1.0), RGBA(0.276022, 0.044167, 0.370164, 1.0), RGBA(0.277018, 0.050344, 0.375715, 1.0), RGBA(0.277941, 0.056324, 0.381191, 1.0)  …  RGBA(0.906311, 0.894855, 0.098125, 1.0), RGBA(0.916242, 0.896091, 0.100717, 1.0), RGBA(0.926106, 0.89733, 0.104071, 1.0), RGBA(0.935904, 0.89857, 0.108131, 1.0), RGBA(0.945636, 0.899815, 0.112838, 1.0), RGBA(0.9553, 0.901065, 0.118128, 1.0), RGBA(0.964894, 0.902323, 0.123941, 1.0), RGBA(0.974417, 0.90359, 0.130215, 1.0), RGBA(0.983868, 0.904867, 0.136897, 1.0), RGBA(0.993248, 0.906157, 0.143936, 1.0)])
+# #     :ambient                    => Computed(:ambient, RGB{Float32}(0.45, 0.45, 0.45))
+# #     :arg1                       => Computed(:arg1, [0.0, 0.0, 0.0])
+# #     :args                       => Computed(:args, ([0.0, 0.0, 0.0],))
+# #     :backlight                  => Computed(:backlight, 0.0)
+# #     :boundingbox                => Computed(:boundingbox, #undef)
+# #     :camera_matrix_names        => Computed(:camera_matrix_names, (:world_to_clip, :eye_to_clip, :world_to_eye))
+# #     :clip_planes                => Computed(:clip_planes, Plane3f[])
+# #     :color                      => Computed(:color, RGBA{Float32}(1.0, 0.64705884, 0.0, 1.0))
+# #     :color_mapping              => Computed(:color_mapping, nothing)
+# #     :color_mapping_type         => Computed(:color_mapping_type, continuous)
+# #     :colormap                   => Computed(:colormap, viridis)
+# #     :colorrange                 => Computed(:colorrange, Makie.Automatic())
+# #     :colorscale                 => Computed(:colorscale, identity)
+# #     :convert_kwargs             => Computed(:convert_kwargs, NamedTuple())
+# #     :converted                  => Computed(:converted, (Point{3, Float64}[[0.0, 0.0, 0.0]],))
+# #     :cycle                      => Computed(:cycle, Cycle([[:color] => :color], false))
+# #     :cycle_index                => Computed(:cycle_index, 1)
+# #     :data_limits                => Computed(:data_limits, #undef)
+# #     :depth_shift                => Computed(:depth_shift, 0.0)
+# #     :diffuse                    => Computed(:diffuse, Float32[1.0, 1.0, 1.0])
+# #     :dim_conversions            => Computed(:dim_conversions, #undef)
+# #     :dim_converted              => Computed(:dim_converted, ([0.0, 0.0, 0.0],))
+# #     :eyeposition                => Computed(:eyeposition, Float32[3.0, 3.0, 3.0])
+# #     :f32c                       => Computed(:f32c, nothing)
+# #     :f32c_scale                 => Computed(:f32c_scale, Float32[1.0, 1.0, 1.0])
+# #     :fetch_pixel                => Computed(:fetch_pixel, false)
+# #     :fxaa                       => Computed(:fxaa, true)
+# #     :gl_len                     => Computed(:gl_len, 1)
+# #     :gl_renderobject            => Computed(:gl_renderobject, RenderObject(id = 2147484966, visible = true))
+# #     :highclip                   => Computed(:highclip, Makie.Automatic())
+# #     :highclip_color             => Computed(:highclip_color, RGBA{Float32}(0.993248, 0.906157, 0.143936, 1.0))
+# #     :inspectable                => Computed(:inspectable, #undef)
+# #     :inspector_clear            => Computed(:inspector_clear, #undef)
+# #     :inspector_hover            => Computed(:inspector_hover, #undef)
+# #     :inspector_label            => Computed(:inspector_label, #undef)
+# #     :instances                  => Computed(:instances, 1)
+# #     :interpolate                => Computed(:interpolate, #undef)
+# #     :light_color                => Computed(:light_color, RGB{Float32}(0.5, 0.5, 0.5))
+# #     :light_direction            => Computed(:light_direction, Float32[0.21692765, -0.42907795, -0.87683207])
+# #     :lowclip                    => Computed(:lowclip, Makie.Automatic())
+# #     :lowclip_color              => Computed(:lowclip_color, RGBA{Float32}(0.267004, 0.004874, 0.329415, 1.0))
+# #     :marker                     => Computed(:marker, Mesh{3, Float32, NgonFace{3, OffsetInteger{-1, UInt32}}}(...))
+# #     :marker_bb                  => Computed(:marker_bb, #undef)
+# #     :markersize                 => Computed(:markersize, Float32[2.0, 2.0, 2.0])
+# #     :matcap                     => Computed(:matcap, nothing)
+# #     :material                   => Computed(:material, #undef)
+# #     :model                      => Computed(:model, [1.0 0.0 0.0 0.0; 0.0 1.0 0.0 0.0; 0.0 0.0 1.0 0.0; 0.0 0.0 0.0 1.0])
+# #     :model_f32c                 => Computed(:model_f32c, Float32[1.0 0.0 0.0 0.0; 0.0 1.0 0.0 0.0; 0.0 0.0 1.0 0.0; 0.0 0.0 0.0 1.0])
+# #     :nan_color                  => Computed(:nan_color, RGBA{Float32}(0.0, 0.0, 0.0, 0.0))
+# #     :overdraw                   => Computed(:overdraw, false)
+# #     :packed_uv_transform        => Computed(:packed_uv_transform, Float32[0.0 -1.0 1.0; 1.0 0.0 0.0])
+# #     :palette_lookup             => Computed(:palette_lookup, Dict(:color => :color))
+# #     :palettes                   => Computed(:palettes, Attributes())
+# #     :pattern_uv_transform       => Computed(:pattern_uv_transform, Float32[0.0 -1.0 1.0; 1.0 0.0 0.0])
+# #     :positions                  => Computed(:positions, Point{3, Float64}[[0.0, 0.0, 0.0]])
+# #     :positions_transformed      => Computed(:positions_transformed, Point{3, Float64}[[0.0, 0.0, 0.0]])
+# #     :positions_transformed_f32c => Computed(:positions_transformed_f32c, Point{3, Float32}[[0.0, 0.0, 0.0]])
+# #     :projection                 => Computed(:projection, Float32[1.8106601 0.0 0.0 0.0; 0.0 2.4142137 0.0 0.0; 0.0 0.0 -1.002002 -1.0402708; 0.0 0.0 -1.0 0.0])
+# #     :projectionview             => Computed(:projectionview, Float32[-1.2803301 1.2803301 0.0 0.0; -0.98559856 -0.98559856 1.9711971 -2.6803156f-16; -0.5785061 -0.5785061 -0.5785061 4.1662846; -0.57735026 -0.57735026 -0.57735026 5.196152])
+# #     :raw_color                  => Computed(:raw_color, RGBA{Float32}(1.0, 0.64705884, 0.0, 1.0))
+# #     :raw_colormap               => Computed(:raw_colormap, ColorTypes.RGBA{Float32}[RGBA(0.267004, 0.004874, 0.329415, 1.0), RGBA(0.26851, 0.009605, 0.335427, 1.0), RGBA(0.269944, 0.014625, 0.341379, 1.0), RGBA(0.271305, 0.019942, 0.347269, 1.0), RGBA(0.272594, 0.025563, 0.353093, 1.0), RGBA(0.273809, 0.031497, 0.358853, 1.0), RGBA(0.274952, 0.037752, 0.364543, 1.0), RGBA(0.276022, 0.044167, 0.370164, 1.0), RGBA(0.277018, 0.050344, 0.375715, 1.0), RGBA(0.277941, 0.056324, 0.381191, 1.0)  …  RGBA(0.906311, 0.894855, 0.098125, 1.0), RGBA(0.916242, 0.896091, 0.100717, 1.0), RGBA(0.926106, 0.89733, 0.104071, 1.0), RGBA(0.935904, 0.89857, 0.108131, 1.0), RGBA(0.945636, 0.899815, 0.112838, 1.0), RGBA(0.9553, 0.901065, 0.118128, 1.0), RGBA(0.964894, 0.902323, 0.123941, 1.0), RGBA(0.974417, 0.90359, 0.130215, 1.0), RGBA(0.983868, 0.904867, 0.136897, 1.0), RGBA(0.993248, 0.906157, 0.143936, 1.0)])
+# #     :resolution                 => Computed(:resolution, Float32[600.0, 450.0])
+# #     :rotation                   => Computed(:rotation, 1.0 + 0.0im + 0.0jm + 0.0km)
+# #     :scaled_color               => Computed(:scaled_color, RGBA{Float32}(1.0, 0.64705884, 0.0, 1.0))
+# #     :scaled_colorrange          => Computed(:scaled_colorrange, nothing)
+# #     :scene_origin               => Computed(:scene_origin, #undef)
+# #     :shading                    => Computed(:shading, true)
+# #     :shininess                  => Computed(:shininess, 32.0)
+# #     :space                      => Computed(:space, data)
+# #     :specular                   => Computed(:specular, Float32[0.2, 0.2, 0.2])
+# #     :ssao                       => Computed(:ssao, false)
+# #     :transform_func             => Computed(:transform_func, identity)
+# #     :transform_marker           => Computed(:transform_marker, true)
+# #     :transformation             => Computed(:transformation, #undef)
+# #     :transparency               => Computed(:transparency, false)
+# #     :uniform_clip_planes        => Computed(:uniform_clip_planes, Vec{4, Float32}[[0.0, 0.0, 0.0, -1.0f9], [0.0, 0.0, 0.0, -1.0f9], [0.0, 0.0, 0.0, -1.0f9], [0.0, 0.0, 0.0, -1.0f9], [0.0, 0.0, 0.0, -1.0f9], [0.0, 0.0, 0.0, -1.0f9], [0.0, 0.0, 0.0, -1.0f9], [0.0, 0.0, 0.0, -1.0f9]])
+# #     :uniform_num_clip_planes    => Computed(:uniform_num_clip_planes, 0)
+# #     :upvector                   => Computed(:upvector, Float32[0.0, 0.0, 1.0])
+# #     :uv_transform               => Computed(:uv_transform, Float32[0.0 -1.0 1.0; 1.0 0.0 0.0])
+# #     :view                       => Computed(:view, Float32[-0.70710677 0.70710677 0.0 0.0; -0.4082483 -0.4082483 0.8164966 -1.110223f-16; 0.57735026 0.57735026 0.57735026 -5.196152; 0.0 0.0 0.0 1.0])
+# #     :view_direction             => Computed(:view_direction, Float32[-0.57735026, -0.57735026, -0.57735026])
+# #     :view_normalmatrix          => Computed(:view_normalmatrix, Float32[-0.7071068 0.7071068 1.4901161f-8; -0.4082483 -0.4082483 0.8164966; 0.5773503 0.5773503 0.5773503])
+# #     :viewport                   => Computed(:viewport, HyperRectangle{2, Int64}([0, 0], [600, 450]))
+# #     :visible                    => Computed(:visible, true)
+# #     :world_normalmatrix         => Computed(:world_normalmatrix, Float32[1.0 0.0 0.0; 0.0 1.0 0.0; 0.0 0.0 1.0])
