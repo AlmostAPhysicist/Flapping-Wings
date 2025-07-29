@@ -27,6 +27,19 @@ windowmanager = WindowManager()
 
 println("Custom structs and utilities initialized successfully.")
 
+function get_user_input(prompt::String)
+    print(prompt)
+    return readline()
+end
+
+
+
+println("\nDragonfly Fluid Flow Analysis - Interactive Simulation")
+
+start = "start"
+println("Type 'start' to begin the visualization. and Press Enter twice to confirm.")
+readline()
+println("Starting visualization...")
 
 # Defining Custom Mesh Transformation functions
 function translate_obj(obj::AbstractMesh, translation::AbstractVector)
@@ -156,6 +169,8 @@ end
 
 println("Models and positions defined successfully.")
 
+println("\nCreating 3D scene with dragonfly model visualization...")
+println("Rendering body and wing meshes with initial positioning...")
 
 # Create a scene for the DragonFly
 begin
@@ -175,20 +190,20 @@ println("Scene created successfully.")
 
 display(s_dragonfly) # Display the scene
 
-
-# meshscatter!(s_dragonfly, frontleftwing_pos[], markersize=0.05)
-# meshscatter!(s_dragonfly, frontrightwing_pos[], markersize=0.05)
-# meshscatter!(s_dragonfly, hindleftwing_pos[], markersize=0.05)
-# meshscatter!(s_dragonfly, hindrightwing_pos[], markersize=0.05)
-
-# delete!(s_dragonfly, s_dragonfly[end])
+println("Rendered initial dragonfly model successfully.")
+if get_user_input("Press Enter to continue to wing kinematics analysis, or 'quit' to exit: ") == "quit"
+    println("Exiting...")
+    exit()
+end
 
 # ---------------------------------------
+println("\nSetting up dragonfly wing kinematics with roll and pitch motion parameters...")
 
 # transformations.interpolate_states(frontrightwing, State(conversions.axisangle2quat([0, 1, 1], 0π / 4)))
 
 
 # -----------------------------------
+println("\nDefining wing motion functions: roll (flapping) and pitch (twisting) with smooth transitions...")
 
 begin # Define the affine transformation functions
 
@@ -301,6 +316,9 @@ end
 
 end
 
+println("Plotting wing angle trajectories over time to visualize motion patterns...")
+println("Generating analytical plots of roll and pitch angles with phase relationships...")
+
 begin # Plotting the angular velocities and positions
 # Time parameters
 t_min = -1.0
@@ -358,10 +376,14 @@ display(fig)
 
 end
 
-
+println("Wing kinematics plots generated successfully.")
+if get_user_input("Press Enter to continue to real-time wing animation setup, or 'quit' to exit: ") == "quit"
+    println("Exiting...")
+    exit()
+end
 
 # --------------------------------
-# Define the wing states update function using the roll and pitch angle functions
+println("\nCreating time-dependent observables for real-time wing state updates...")
 
 t = Observable(0.0)  # Time observable
 
@@ -403,6 +425,7 @@ on(t) do _
 end
 
 # ---------------------------------- 
+println("\nImplementing wing state update function to apply roll and pitch rotations...")
 
 # Define update function for dragonfly wing states
 
@@ -425,6 +448,7 @@ on(t) do _ # Update the wing states whenever time changes
 end
 
 # ----------------------------------
+println("\nSetting up fluid flow calculations using vortex loop method for each wing surface...")
 
 # Define fluid flow functions for the dragonfly wings
 
@@ -647,6 +671,14 @@ dt = 0.01
 n=1+rand()
 n=0.11
 n=1
+
+println("\nStarting real-time wing animation with vortex circulation calculations...")
+println("Animation duration: $(n) seconds at $(1/dt) FPS")
+println("Watch for wing color changes indicating circulation strength:")
+println("- Red surfaces: Positive circulation (upward flow)")
+println("- Blue surfaces: Negative circulation (downward flow)")
+println("- Pink arrows: Velocity difference vectors")
+
 display(s_dragonfly)  # Display the dragonfly scene
 
 gamma_meshes= []
@@ -757,6 +789,11 @@ position_over_time
 s_dragonfly
 lines!(s_dragonfly, position_over_time .* 10, linewidth=5, color=[GLMakie.RGB(1.0 - i/length(position_over_time), 0.0, i/length(position_over_time)) for i in eachindex(position_over_time)])
 
+println("Flight trajectory added to 3D scene with color gradient (red=start, blue=end)")
+if get_user_input("Press Enter to visualize fluid velocity fields, or 'quit' to exit: ") == "quit"
+    println("Exiting...")
+    exit()
+end
 delete!(s_dragonfly, s_dragonfly[end])  # Delete the previous gamma meshes from the scene
 for v in vs
     delete!(s_dragonfly, v)  # Delete the previous velocity vectors from the scene
@@ -766,19 +803,36 @@ for i in eachindex(centroids[])
     push!(vs, meshscatter!(s_dragonfly, Point(0.0, 0.0, 0.0), marker=Arrow(centroids[][i], Vec3(v)).mesh, markersize=1, color=:pink)) # Visualize the difference between the velocity field and the wing velocity at each centroid
 end
 sleep(2.0)
-
 # ------------------
-# delete!(s_dragonfly, s_dragonfly[end])  # Delete the last frame of the scene
-# drawState!(s_dragonfly; scale=1)  # Draw the state of the dragonfly in the scene
+println("\nComputing and visualizing 3D fluid velocity field around dragonfly...")
+println("Displaying vector field generated by wing vortices using Biot-Savart law...")
+
 vecs = visualize_vector_field!(s_dragonfly, F, bounds=[1.5, 1.5, 0.5], resolution=[15, 15, 20], center=rand(centroids[]))
+
+println("3D velocity field visualization added to scene.")
+if get_user_input("Press Enter to analyze relative velocity field, or 'quit' to exit: ") == "quit"
+    println("Exiting...")
+    exit()
+end
+
 for v in vecs
     delete!(s_dragonfly, v)  # Delete the previous vector field from the scene
 end
+
+println("\nAnalyzing relative velocity field in wing reference frame...")
+println("Computing flow velocities relative to moving wing surface...")
 
 F_rel(x,y,z) = F(x,y,z) .- calculate_wing_velocity(Point3(x, y, z), velocity_axis_angles[][1][1], velocity_axis_angles[][1][2], frontleftwing_pos[])  # Relative velocity field function
 frontleftwing_centroid = mean(frontleftwing_centroids[])
 
 m = visualize_vector_field!(s_dragonfly, F_rel, bounds=[1.5, 1.5, 1.3], resolution=[13, 11, 11], center=frontleftwing_centroid, custom_arrows=true, scale=0.5*0.75, base=3)  # Visualize the relative velocity field at the front left wing centroid
+
+println("Relative velocity field visualization completed around front left wing.")
+if get_user_input("Press Enter to view final time-series analysis, or 'quit' to exit: ") == "quit"
+    println("Exiting...")
+    exit()
+end
+
 for v in m
     delete!(s_dragonfly, v)  # Delete the previous relative vector field from the scene
 end
@@ -792,6 +846,14 @@ end
 
 #-------------------
 
+println("\nGenerating final time-series plots of wing angular positions...")
+println("Displaying complete motion history throughout simulation duration...")
+
+if get_user_input("Press Enter to continue to time-series analysis, or 'quit' to exit: ") == "quit"
+    println("Exiting...")
+    exit()
+end
+
 fig = Figure()
 ax = Axis(fig[1, 1], title="Angular Positions Over Time", xlabel="Time (s)", ylabel="Angle (rad)")
 lines!(ax, lift(theta_roll_front_vec -> range(t0, step=dt, length=length(theta_roll_front_vec)), theta_roll_front_vec), theta_roll_front_vec, label="Front Roll Theta", color=:red)
@@ -803,3 +865,18 @@ lines!(ax, lift(theta_pitch_hind_vec -> range(t0, step=dt, length=length(theta_p
 Legend(fig[1, 2], ax, position=:bottomright, title="Angular Positions", fontsize=10)
 
 display(fig)  # Display the figure with the initial state
+
+println("Time-series analysis completed successfully!")
+println("\nDragonfly fluid flow simulation finished!")
+println("All visualizations generated:")
+println("✓ 3D dragonfly model with animated wings")
+println("✓ Wing kinematics plots (roll/pitch angles)")
+println("✓ Real-time vortex circulation visualization")
+println("✓ Flight trajectory from aerodynamic forces") 
+println("✓ 3D fluid velocity field")
+println("✓ Relative velocity field analysis")
+println("✓ Complete time-series motion data")
+
+println("\nPress Enter to exit simulation...")
+readline()
+println("Exiting dragonfly fluid flow analysis.")

@@ -104,12 +104,16 @@ Flapping Wing Flying Research/
 ├── src/                     # Core functionality modules             
 ├── Simulations/             # Main simulation files
 │   └── dragonfly.jl             # *Interactive dragonfly wing simulation*
+│   └── fluidanalysis.jl         # *Dragonfly simulation with Fluid Flow analysis*
+│   └── vectorfields.jl          # *General Vector field visualizations*
 ├── Demos-and-Tutorials/     # Learning materials and examples                 
 ├── Models/                  # 3D model files (.stl, .obj)                
 ├── Media/                   # Generated images and videos                
 ├── Plots/                   # Generated analysis plots
 └── Notes/                   # Documentation and research papers
 ```
+
+I would suggest looking into files within the `Simulations` folder as well as some files like `rotation-demo.ipynb` as well as `fluidflow.ipynb` within the `Demos-and-Tutorials` folder for more simpler interactivity.
 
 ## Setup and Introduction to Julia
 >Julia is a high-level, general-purpose dynamic programming language, designed to be fast and productive, for e.g. data science, artificial intelligence, machine learning, modeling and simulation, most commonly used for numerical analysis and computational science.
@@ -191,10 +195,12 @@ Now we'll create a dedicated environment for this project with all the necessary
 While still in package manager mode (you should see `(@Rotations) pkg>`), run:
 
 ```julia
-add BenchmarkTools, Colors, DataStructures, FileIO, GLMakie, GeometryBasics, Quaternions
+add BenchmarkTools, Colors, DataStructures, FileIO, GLMakie@0.11.8, GeometryBasics, Quaternions
 ```
 
 Press Enter and wait for the packages to install. **This will take several minutes** as these are substantial packages with many dependencies.
+
+>Note: The GLMakie version used for the development of this project was GLMakie@0.11.8. I would suggest to add the same version as specified above since the newer version may have bugs that break the simulation
 
 <details>
 <summary> What each package does</summary>
@@ -218,7 +224,7 @@ Instead of using the package manager mode, you can also install packages from th
 2. Run this code:
    ```julia
    using Pkg
-   Pkg.add(["BenchmarkTools", "Colors", "DataStructures", "FileIO", "GLMakie", "GeometryBasics", "Quaternions"])
+   Pkg.add(["BenchmarkTools", "Colors", "DataStructures", "FileIO", "GLMakie@0.11.8", "GeometryBasics", "Quaternions"])
    ```
 
 Both methods achieve the same result.
