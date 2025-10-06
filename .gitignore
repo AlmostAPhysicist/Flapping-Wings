@@ -1,0 +1,14 @@
+# Ignore LaTeX source and auxiliary files only inside Introduction/ (including subfolders)
+# Single-level
+/Introduction/*.aux
+/Introduction/*.log
+/Introduction/*.out
+/Introduction/*.fls
+/Introduction/*.*tex*
+
+# Multi-level (subdirectories)
+/Introduction/**/*.aux
+/Introduction/**/*.log
+/Introduction/**/*.out
+/Introduction/**/*.fls
+/Introduction/**/*.*tex*
